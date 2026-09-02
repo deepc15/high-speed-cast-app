@@ -1,7 +1,0 @@
-# Python 3.12 or 3.13 recommended -- av and dxcam wheels lag behind new releases.
-av>=12.0.0            # libavcodec/libswscale bindings: decode, encode, colour convert
-PySDL2>=0.9.16        # window + GPU YUV texture upload
-pysdl2-dll>=2.28.0    # ships the SDL2 DLL so there is nothing to install by hand
-numpy>=1.24
-dxcam>=0.0.5          # DXGI Desktop Duplication capture (Windows -> Android)
-mss>=9.0.1            # capture fallback

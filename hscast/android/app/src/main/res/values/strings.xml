@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">HSCast</string>
-    <string name="accessibility_label">HSCast remote input</string>
-    <string name="accessibility_description">Lets the paired Windows PC send taps, swipes, scrolls and text to this device while casting. No data leaves the local connection.</string>
-    <string name="notification_channel">Screen casting</string>
-</resources>
