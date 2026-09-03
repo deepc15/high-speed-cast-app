@@ -34,7 +34,7 @@ class ScreenEncoder(
         val fps: Int,
         val bitrateBps: Int,
         val codec: Int,
-        val iFrameIntervalSec: Float = 4f,
+        val iFrameIntervalSec: Float = 1.0f,
     )
 
     interface Listener {
@@ -112,6 +112,8 @@ class ScreenEncoder(
             setInteger(MediaFormat.KEY_BIT_RATE, config.bitrateBps)
             setInteger(MediaFormat.KEY_FRAME_RATE, config.fps)
             setFloat(MediaFormat.KEY_I_FRAME_INTERVAL, config.iFrameIntervalSec)
+            // Repeat previous frame every 100ms (10fps min) if the phone screen is static
+            setLong(MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER, 100_000L)
             // Constant bitrate keeps the encoder from saving up bits and then
             // emitting a burst that a thin link cannot drain in one frame time.
             setInteger(
@@ -137,12 +139,15 @@ class ScreenEncoder(
         val inputSurface = encoder.createInputSurface()
         encoder.start()
 
+        val flags = DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR or
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+
         val display = projection.createVirtualDisplay(
             "hscast",
             config.width,
             config.height,
             config.dpi,
-            DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+            flags,
             inputSurface,
             null,
             null,

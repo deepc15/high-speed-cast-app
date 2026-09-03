@@ -24,6 +24,7 @@ from .transport import (
     MIRROR_CONTROL_PORT,
     MIRROR_VIDEO_PORT,
     Adb,
+    TransportError,
     Tunnels,
     connect,
 )
@@ -41,7 +42,7 @@ class MirrorOptions:
     hwaccel: bool = True
     vsync: bool = False
     launch: bool = True
-    connect_timeout: float = 60.0
+    connect_timeout: float = 120.0
     record: str | None = None
     stats_interval: float = 2.0
     exit_after: float = 0.0
@@ -161,29 +162,118 @@ def _setup_transport(opts: MirrorOptions, tunnels: Tunnels) -> tuple[str, int, i
     if not adb.app_installed():
         log("warning: com.hscast is not installed on the device -- "
             "build android/ and install it, or start the sender manually")
+
+    # Mode validation: if USB is selected on PC, verify Android app is not set to Wi-Fi
+    try:
+        pref_out = adb.run(
+            "shell", "run-as", "com.hscast", "cat", "/data/data/com.hscast/shared_prefs/hscast.xml",
+            check=False, timeout=1.5,
+        )
+        if 'name="mode_type"' in pref_out and ('>wifi<' in pref_out or 'value="wifi"' in pref_out):
+            try:
+                adb.run(
+                    "shell", "am", "broadcast", "-a", "com.hscast.VALIDATION_ERROR",
+                    "--es", "message", "Please select USB option in Android to proceed",
+                    check=False, timeout=1.0,
+                )
+            except Exception:
+                pass
+            raise TransportError("Please select USB option in Android to proceed")
+    except TransportError:
+        raise
+    except Exception:
+        pass
+
     tunnels.forward(opts.video_port, MIRROR_VIDEO_PORT)
     tunnels.forward(opts.control_port, MIRROR_CONTROL_PORT)
     if opts.launch:
-        extras = {"mode": "send"} | opts.extra_launch
+        already_casting = False
         try:
-            adb.launch_app(extras)
-            log("launched com.hscast on the device (accept the capture prompt)")
-        except Exception as exc:
-            log(f"could not auto-launch the app ({exc}); start it by hand")
+            out = adb.run("shell", "dumpsys", "activity", "services", "com.hscast/.CastService", check=False, timeout=2.0)
+            if "CastService" in out and "app=ProcessRecord" in out:
+                already_casting = True
+        except Exception:
+            pass
+
+        if already_casting:
+            log("casting is already active on the device; connecting directly...")
+        else:
+            try:
+                adb.run("logcat", "-c", check=False, timeout=3.0)
+            except Exception:
+                pass
+            extras = {"mode": "send"} | opts.extra_launch
+            try:
+                adb.launch_app(extras)
+                log("launched com.hscast on the device (accept the capture prompt)")
+            except Exception as exc:
+                log(f"could not auto-launch the app ({exc}); start it by hand")
     return "127.0.0.1", opts.video_port, opts.control_port
 
 
 def run_mirror(opts: MirrorOptions) -> int:
     with Tunnels() as tunnels:
-        host, video_port, control_port = _setup_transport(opts, tunnels)
+        try:
+            host, video_port, control_port = _setup_transport(opts, tunnels)
+        except TransportError as exc:
+            msg = str(exc)
+            if "Please select" in msg:
+                log(f"validation failed: {msg}")
+                return 2
+            raise
 
-        video = connect(host, video_port, P.CH_VIDEO, P.ROLE_RECEIVER,
-                        timeout=opts.connect_timeout)
+        def check_cancelled() -> bool:
+            if not opts.usb or not tunnels.adb:
+                return False
+            # If CastService is running, it definitely wasn't cancelled
+            try:
+                svc = tunnels.adb.run(
+                    "shell", "dumpsys", "activity", "services", "com.hscast/.CastService",
+                    check=False, timeout=1.0,
+                )
+                if "CastService" in svc and "app=ProcessRecord" in svc:
+                    return False
+            except Exception:
+                pass
+
+            try:
+                out = tunnels.adb.run(
+                    "logcat", "-d", "-s", "HSCast:W", "HSCast:E",
+                    check=False, timeout=1.0,
+                )
+                upper = out.upper()
+                if "SCREEN_CAPTURE_CANCELLED" in upper or "SCREEN_CAPTURE_DENIED" in upper:
+                    return True
+            except Exception:
+                pass
+            return False
+
+        conn_mode = "usb" if opts.usb else "wifi"
+        try:
+            video = connect(
+                host,
+                video_port,
+                P.CH_VIDEO,
+                P.ROLE_RECEIVER,
+                timeout=opts.connect_timeout,
+                check_cancelled=check_cancelled if opts.usb else None,
+                conn_mode=conn_mode,
+            )
+        except TransportError as exc:
+            msg = str(exc)
+            if "Please select" in msg:
+                log(f"validation failed: {msg}")
+                return 2
+            if "cancelled" in msg.lower():
+                log(f"mirror stopped: {exc}")
+                return 0
+            raise
+
         control = None
         if opts.control:
             try:
                 control = connect(host, control_port, P.CH_CONTROL, P.ROLE_SENDER,
-                                  timeout=15.0)
+                                  timeout=5.0, conn_mode=conn_mode)
             except Exception as exc:
                 log(f"control channel unavailable ({exc}); display-only")
 
@@ -196,18 +286,28 @@ def run_mirror(opts: MirrorOptions) -> int:
 
 
 def _session(opts: MirrorOptions, video: P.Conn, control: P.Conn | None) -> int:
-    packet = video.read_packet()
-    while packet.type != P.P_STREAM_INFO:
+    log("connected to phone; waiting for stream configuration...")
+    try:
+        video.sock.settimeout(10.0)
         packet = video.read_packet()
+        while packet.type != P.P_STREAM_INFO:
+            packet = video.read_packet()
+        video.sock.settimeout(None)
+    except Exception as exc:
+        log(f"failed to receive stream info from phone ({exc})")
+        raise
+
     info = P.StreamInfo.unpack(packet.payload)
     log(f"stream: {info.codec_name} {info.width}x{info.height} @ {info.fps} fps, "
         f"{info.bitrate / 1e6:.1f} Mb/s")
+    log("opening casting display window...")
 
     mailbox = Mailbox()
     reader = _Reader(video, mailbox, opts.hwaccel, control, opts.record, info)
     pong = _PongReader(control) if control else None
 
     with Renderer("HSCast - Android", info.width, info.height, opts.vsync) as renderer:
+        log("casting window opened successfully!")
         sender = ControlSender(control, renderer, info.bitrate)
         if control:
             log("control enabled:\n" + HOTKEY_HELP)

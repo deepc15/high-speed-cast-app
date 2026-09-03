@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HSCast - High-Speed, Ultra-Low Latency Android and Windows Screen Casting">
+  <title>HSCast - Screen Casting Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="ambient-glow glow-cyan"></div>
+  <div class="ambient-glow glow-purple"></div>
+
+  <div class="app-container">
+    <!-- Top Navigation / Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">HSCast</h1>
+          <span class="brand-badge">Windows Pro</span>
+        </div>
+      </div>
+
+      <nav class="nav-tabs" role="tablist">
+        <button id="tab-btn-studio" class="nav-tab active" data-tab="studio" role="tab" aria-selected="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+          <span>Cast Studio</span>
+        </button>
+
+        <button id="tab-btn-doctor" class="nav-tab" data-tab="doctor" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+          </svg>
+          <span>System Doctor</span>
+          <span id="header-doctor-badge" class="badge-dot dot-warn" title="Diagnostics check"></span>
+        </button>
+
+        <button id="tab-btn-guide" class="nav-tab" data-tab="guide" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <span>Android Guide</span>
+        </button>
+
+        <button id="tab-btn-settings" class="nav-tab" data-tab="settings" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Preferences</span>
+        </button>
+      </nav>
+
+      <div class="header-status">
+        <span id="session-status-pill" class="status-pill status-idle">
+          <span class="pill-dot"></span>
+          <span id="session-status-text">Idle</span>
+        </span>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+      <!-- TAB 1: CAST STUDIO -->
+      <section id="tab-studio" class="tab-pane active" role="tabpanel">
+        <div class="studio-grid">
+          
+          <!-- Left Column: Setup & Launch -->
+          <div class="studio-col main-setup-card card glass-panel">
+            
+            <!-- Casting Mode Switcher -->
+            <div class="section-block">
+              <label class="section-label">1. Casting Direction</label>
+              <div class="mode-selector">
+                <button type="button" id="btn-mode-mirror" class="mode-card active" data-mode="mirror">
+                  <div class="mode-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                      <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                    </svg>
+                    <span class="mode-arrow">➔</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                      <line x1="8" y1="21" x2="16" y2="21"></line>
+                      <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                  </div>
+                  <div class="mode-card-title">Phone to PC</div>
+                  <div class="mode-card-desc">Mirror screen & control with mouse & keyboard</div>
+                </button>
+
+                <button type="button" id="btn-mode-desktop" class="mode-card" data-mode="desktop">
+                  <div class="mode-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                      <line x1="8" y1="21" x2="16" y2="21"></line>
+                      <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    <span class="mode-arrow">➔</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                      <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                    </svg>
+                  </div>
+                  <div class="mode-card-title">PC to Phone</div>
+                  <div class="mode-card-desc">Stream Windows desktop to Android as 2nd screen</div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Connection Channel Switcher -->
+            <div class="section-block">
+              <label class="section-label">2. Connection Method</label>
+              <div class="segmented-control">
+                <button type="button" id="btn-conn-usb" class="segment-btn active" data-conn="usb">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="7" y="2" width="10" height="10" rx="1"></rect>
+                    <line x1="9" y1="12" x2="9" y2="16"></line>
+                    <line x1="15" y1="12" x2="15" y2="16"></line>
+                    <path d="M7 16h10v4a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-4z"></path>
+                  </svg>
+                  <span>USB Cable (Ultra-Low Latency)</span>
+                </button>
+                <button type="button" id="btn-conn-wifi" class="segment-btn" data-conn="wifi">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                    <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                    <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                  </svg>
+                  <span>Wi-Fi Network (Wireless)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- USB Device Target Area -->
+            <div id="target-usb-area" class="section-block connection-details">
+              <div class="field-row">
+                <label for="select-device" class="field-label">Target Android Device</label>
+                <button type="button" id="btn-refresh-devices" class="btn-text" title="Scan for connected USB devices">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                  <span>Refresh</span>
+                </button>
+              </div>
+
+              <div class="custom-select-wrapper">
+                <select id="select-device" class="input-select">
+                  <option value="">Searching for devices...</option>
+                </select>
+              </div>
+              <div id="device-hint" class="field-hint">
+                <span class="hint-icon">ℹ</span> Connect phone via USB with USB Debugging enabled.
+              </div>
+            </div>
+
+            <!-- Wi-Fi Target Area -->
+            <div id="target-wifi-area" class="section-block connection-details hidden">
+              <div class="field-row">
+                <label for="input-phone-ip" class="field-label">Android Phone IP Address</label>
+                <div class="badge-chip">
+                  PC IP: <strong id="pc-local-ip">192.168.1.x</strong>
+                </div>
+              </div>
+
+              <div class="input-with-action">
+                <input type="text" id="input-phone-ip" class="input-text" placeholder="e.g. 192.168.1.50" autocomplete="off">
+                <div id="recent-ips-dropdown" class="recent-ips-list hidden"></div>
+              </div>
+              <div class="field-hint">
+                <span class="hint-icon">ℹ</span> Start casting in the Android app first to view its IP address.
+              </div>
+            </div>
+
+            <!-- Monitor selection (Desktop mode only) -->
+            <div id="target-monitor-area" class="section-block hidden">
+              <label for="select-monitor" class="field-label">Display Monitor to Cast</label>
+              <select id="select-monitor" class="input-select">
+                <option value="0">Primary Display (Auto)</option>
+              </select>
+            </div>
+
+            <!-- Primary Action Buttons -->
+            <div class="action-block">
+              <button type="button" id="btn-start-cast" class="btn-primary btn-glow">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span id="start-btn-label">Start Mirroring</span>
+              </button>
+
+              <button type="button" id="btn-stop-cast" class="btn-danger hidden">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="6" width="12" height="12"></rect>
+                </svg>
+                <span>Stop Session</span>
+              </button>
+            </div>
+
+            <!-- Demo / Virtual Device helper -->
+            <div class="demo-box">
+              <div class="demo-info">
+                <strong>No phone connected right now?</strong>
+                <span>Test the casting pipeline instantly with our simulated virtual phone.</span>
+              </div>
+              <button type="button" id="btn-run-demo" class="btn-secondary btn-sm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span id="demo-btn-label">Run Virtual Demo</span>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Live Telemetry & Tuning -->
+          <div class="studio-col side-controls-card">
+            
+            <!-- Live Session HUD -->
+            <div class="card glass-panel hud-panel">
+              <div class="hud-header">
+                <h3 class="card-title">Live Session HUD</h3>
+                <span id="hud-uptime-badge" class="badge-tag">Uptime: 00:00</span>
+              </div>
+
+              <div class="telemetry-grid">
+                <div class="telemetry-item">
+                  <div class="telemetry-label">Target Rate</div>
+                  <div id="hud-fps-val" class="telemetry-value">60 FPS</div>
+                </div>
+                <div class="telemetry-item">
+                  <div class="telemetry-label">Bitrate</div>
+                  <div id="hud-bitrate-val" class="telemetry-value">12.0 Mb/s</div>
+                </div>
+                <div class="telemetry-item">
+                  <div class="telemetry-label">Codec</div>
+                  <div id="hud-codec-val" class="telemetry-value">H.264</div>
+                </div>
+                <div class="telemetry-item">
+                  <div class="telemetry-label">HW Acceleration</div>
+                  <div id="hud-hw-val" class="telemetry-value text-cyan">Active</div>
+                </div>
+              </div>
+
+              <!-- Remote Control Quick Action Bar -->
+              <div class="remote-action-container">
+                <div class="remote-title">Quick Remote Navigation</div>
+                <div class="remote-btn-group">
+                  <button type="button" id="btn-action-back" class="btn-remote" title="Android Back (Ctrl+B)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    <span>Back</span>
+                  </button>
+                  <button type="button" id="btn-action-home" class="btn-remote" title="Android Home (Ctrl+H)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="6"></circle>
+                    </svg>
+                    <span>Home</span>
+                  </button>
+                  <button type="button" id="btn-action-recents" class="btn-remote" title="Recent Apps (Ctrl+S)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="5" y="5" width="14" height="14" rx="2"></rect>
+                    </svg>
+                    <span>Recents</span>
+                  </button>
+                  <button type="button" id="btn-action-lock" class="btn-remote" title="Lock Screen (Ctrl+P)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span>Lock</span>
+                  </button>
+                  <button type="button" id="btn-action-wake" class="btn-remote" title="Wake Screen (Ctrl+W)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="5"></circle>
+                      <line x1="12" y1="1" x2="12" y2="3"></line>
+                      <line x1="12" y1="21" x2="12" y2="23"></line>
+                    </svg>
+                    <span>Wake</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quality & Tuning Card -->
+            <div class="card glass-panel tuning-panel">
+              <h3 class="card-title">Performance & Quality Tuning</h3>
+              
+              <!-- Quick Preset Pills -->
+              <div class="preset-pill-group">
+                <button type="button" class="preset-pill" data-preset="gaming">Gaming (Fast)</button>
+                <button type="button" class="preset-pill active" data-preset="balanced">Balanced</button>
+                <button type="button" class="preset-pill" data-preset="cinema">Ultra Quality</button>
+              </div>
+
+              <!-- Bitrate Slider -->
+              <div class="slider-control">
+                <div class="slider-header">
+                  <label for="slider-bitrate" class="slider-label">Streaming Bitrate</label>
+                  <span id="slider-bitrate-label" class="slider-val">12 Mbps</span>
+                </div>
+                <input type="range" id="slider-bitrate" class="custom-range" min="2" max="30" step="1" value="12">
+              </div>
+
+              <!-- Framerate selector -->
+              <div class="setting-row">
+                <label for="select-fps" class="setting-label">Frame Rate (FPS)</label>
+                <select id="select-fps" class="setting-select">
+                  <option value="30">30 FPS</option>
+                  <option value="60" selected>60 FPS (Recommended)</option>
+                  <option value="90">90 FPS</option>
+                  <option value="120">120 FPS</option>
+                </select>
+              </div>
+
+              <!-- Video Codec -->
+              <div class="setting-row">
+                <label for="select-codec" class="setting-label">Video Codec</label>
+                <select id="select-codec" class="setting-select">
+                  <option value="h264" selected>H.264 / AVC (Most Compatible)</option>
+                  <option value="hevc">HEVC / H.265 (High Compression)</option>
+                </select>
+              </div>
+
+              <!-- Toggles Grid -->
+              <div class="toggle-grid">
+                <label class="toggle-item">
+                  <input type="checkbox" id="toggle-hwaccel" checked>
+                  <span class="toggle-track"></span>
+                  <span class="toggle-text">GPU Hardware Decode</span>
+                </label>
+
+                <label class="toggle-item">
+                  <input type="checkbox" id="toggle-control" checked>
+                  <span class="toggle-track"></span>
+                  <span class="toggle-text">Mouse & Keyboard Input</span>
+                </label>
+
+                <label class="toggle-item">
+                  <input type="checkbox" id="toggle-vsync">
+                  <span class="toggle-track"></span>
+                  <span class="toggle-text">VSync (Smooth Presentation)</span>
+                </label>
+
+                <label class="toggle-item">
+                  <input type="checkbox" id="toggle-cursor" checked>
+                  <span class="toggle-track"></span>
+                  <span class="toggle-text">Draw Cursor (Desktop Cast)</span>
+                </label>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Collapsible Console Output Drawer -->
+        <div class="console-drawer card glass-panel">
+          <div class="console-header" id="btn-toggle-console">
+            <div class="console-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4 17 10 11 4 5"></polyline>
+                <line x1="12" y1="19" x2="20" y2="19"></line>
+              </svg>
+              <span>Session Logs & Telemetry</span>
+              <span id="log-count-badge" class="badge-tag">0 lines</span>
+            </div>
+            <div class="console-actions" onclick="event.stopPropagation()">
+              <button type="button" id="btn-copy-logs" class="btn-icon" title="Copy Logs">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+              <button type="button" id="btn-clear-logs" class="btn-icon" title="Clear Console">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div id="console-body" class="console-body">
+            <div id="console-logs" class="console-lines">
+              <div class="log-line log-info">HSCast Windows Application Initialized. Ready.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: SYSTEM DOCTOR -->
+      <section id="tab-doctor" class="tab-pane" role="tabpanel">
+        <div class="doctor-container card glass-panel">
+          <div class="doctor-header">
+            <div>
+              <h2 class="section-heading">Hardware & Dependency Health Check</h2>
+              <p class="section-subheading">HSCast leverages hardware video decoding and low-latency DXGI capture.</p>
+            </div>
+            <button type="button" id="btn-rerun-doctor" class="btn-secondary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 4v6h-6"></path>
+                <path d="M1 20v-6h6"></path>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+              </svg>
+              <span>Re-run Diagnostics</span>
+            </button>
+          </div>
+
+          <div class="doctor-grid">
+            <!-- Python -->
+            <div class="doctor-item">
+              <div class="doctor-item-header">
+                <span class="doctor-title">Python Runtime</span>
+                <span id="doc-py-badge" class="badge-status status-ok">Pass</span>
+              </div>
+              <div id="doc-py-desc" class="doctor-desc">Python 3.12 detected.</div>
+            </div>
+
+            <!-- PyAV -->
+            <div class="doctor-item">
+              <div class="doctor-item-header">
+                <span class="doctor-title">PyAV & FFmpeg</span>
+                <span id="doc-pyav-badge" class="badge-status status-ok">Pass</span>
+              </div>
+              <div id="doc-pyav-desc" class="doctor-desc">libavcodec hardware decode available.</div>
+            </div>
+
+            <!-- GPU Encoders -->
+            <div class="doctor-item">
+              <div class="doctor-item-header">
+                <span class="doctor-title">GPU Encoders</span>
+                <span id="doc-encoders-badge" class="badge-status status-ok">Pass</span>
+              </div>
+              <div id="doc-encoders-desc" class="doctor-desc">NVENC / QSV hardware encoders detected.</div>
+            </div>
+
+            <!-- PySDL2 -->
+            <div class="doctor-item">
+              <div class="doctor-item-header">
+                <span class="doctor-title">PySDL2 Window & GPU Upload</span>
+                <span id="doc-sdl-badge" class="badge-status status-ok">Pass</span>
+              </div>
+              <div id="doc-sdl-desc" class="doctor-desc">SDL2 2.32+ NV12 textures enabled.</div>
+            </div>
+
+            <!-- DXGI Capture -->
+            <div class="doctor-item">
+              <div class="doctor-item-header">
+                <span class="doctor-title">DXGI Desktop Duplication</span>
+                <span id="doc-dxcam-badge" class="badge-status status-ok">Pass</span>
+              </div>
+              <div id="doc-dxcam-desc" class="doctor-desc">Direct GPU frame capture ready.</div>
+            </div>
+
+            <!-- ADB Status -->
+            <div class="doctor-item">
+              <div class="doctor-item-header">
+                <span class="doctor-title">Android ADB Bridge</span>
+                <span id="doc-adb-badge" class="badge-status status-warn">Checking...</span>
+              </div>
+              <div id="doc-adb-desc" class="doctor-desc">Checking ADB binary path...</div>
+            </div>
+          </div>
+
+          <!-- ADB Path Override Box -->
+          <div class="adb-override-box">
+            <h4 class="box-title">Custom ADB Binary Path</h4>
+            <p class="box-desc">If ADB is not on your Windows PATH, you can select your <code>adb.exe</code> file directly below:</p>
+            <div class="file-picker-row">
+              <input type="text" id="input-custom-adb" class="input-text" placeholder="e.g. C:\Users\...\AppData\Local\Android\Sdk\platform-tools\adb.exe">
+              <button type="button" id="btn-browse-adb" class="btn-secondary">Browse File...</button>
+              <button type="button" id="btn-save-adb" class="btn-primary">Apply Path</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: ANDROID SETUP GUIDE -->
+      <section id="tab-guide" class="tab-pane" role="tabpanel">
+        <div class="guide-container card glass-panel">
+          <h2 class="section-heading">Android Setup & Quick Guide</h2>
+          <p class="section-subheading">Follow these quick steps on your phone for zero-friction casting.</p>
+
+          <div class="guide-steps">
+            <!-- Step 1 -->
+            <div class="step-card">
+              <div class="step-badge">1</div>
+              <div class="step-content">
+                <h4 class="step-title">Enable USB Debugging on Android</h4>
+                <p class="step-desc">
+                  Open <strong>Settings → About Phone</strong>, tap <strong>Build Number</strong> 7 times until Developer Mode is unlocked.<br>
+                  Then go to <strong>Settings → System → Developer Options</strong> and turn on <strong>USB Debugging</strong>.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-card">
+              <div class="step-badge">2</div>
+              <div class="step-content">
+                <h4 class="step-title">Plug In USB Cable & Authorize</h4>
+                <p class="step-desc">
+                  Connect your phone to this PC with a USB cable. When the phone prompts with <em>"Allow USB debugging from this computer?"</em>, check <strong>Always allow</strong> and tap <strong>Allow</strong>.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-card">
+              <div class="step-badge">3</div>
+              <div class="step-content">
+                <h4 class="step-title">Enable Remote Input Control (Optional)</h4>
+                <p class="step-desc">
+                  To control the phone with your mouse and keyboard, open <strong>Settings → Accessibility</strong> on Android and turn on <strong>HSCast Remote Input</strong>.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="step-card">
+              <div class="step-badge">4</div>
+              <div class="step-content">
+                <h4 class="step-title">Hotkeys in Mirror Window</h4>
+                <div class="hotkey-table">
+                  <div class="hk-row"><span class="hk-key">Ctrl + F</span><span>Toggle Fullscreen</span></div>
+                  <div class="hk-row"><span class="hk-key">Right Click / Ctrl + B</span><span>Android Back Button</span></div>
+                  <div class="hk-row"><span class="hk-key">Middle Click / Ctrl + H</span><span>Android Home Button</span></div>
+                  <div class="hk-row"><span class="hk-key">Ctrl + S</span><span>Recent Applications</span></div>
+                  <div class="hk-row"><span class="hk-key">Ctrl + P / Ctrl + W</span><span>Lock / Wake Screen</span></div>
+                  <div class="hk-row"><span class="hk-key">Ctrl + K</span><span>Force Immediate Keyframe</span></div>
+                  <div class="hk-row"><span class="hk-key">Ctrl + Q</span><span>Quit Mirror Window</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: PREFERENCES -->
+      <section id="tab-settings" class="tab-pane" role="tabpanel">
+        <div class="settings-container card glass-panel">
+          <h2 class="section-heading">Application Preferences</h2>
+          <p class="section-subheading">Configure defaults, stream recording, and advanced settings.</p>
+
+          <div class="pref-group">
+            <h4 class="pref-group-title">Recording Stream</h4>
+            <p class="pref-desc">Optionally record the raw H.264/HEVC elementary video stream while mirroring.</p>
+            <div class="file-picker-row">
+              <input type="text" id="input-record-path" class="input-text" placeholder="No recording path configured (Click Browse to record)">
+              <button type="button" id="btn-browse-record" class="btn-secondary">Choose File...</button>
+              <button type="button" id="btn-clear-record" class="btn-text">Clear</button>
+            </div>
+          </div>
+
+          <div class="pref-group">
+            <h4 class="pref-group-title">Scaling Filter</h4>
+            <div class="field-row">
+              <label for="select-filter" class="field-label">Downscale Filter Algorithm</label>
+              <select id="select-filter" class="setting-select">
+                <option value="AREA" selected>AREA (Best readability for text & code)</option>
+                <option value="BILINEAR">BILINEAR (Fast & smooth)</option>
+                <option value="FAST_BILINEAR">FAST_BILINEAR (Lowest CPU overhead)</option>
+                <option value="BICUBIC">BICUBIC (Sharp photographic imagery)</option>
+                <option value="POINT">POINT (Nearest neighbor)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pref-actions">
+            <button type="button" id="btn-save-prefs" class="btn-primary">Save Preferences</button>
+            <span id="prefs-saved-msg" class="text-cyan hidden">✓ Saved successfully!</span>
+          </div>
+        </div>
+      </section>
+
+    <!-- Interactive Error & Alert Modal Pop-up -->
+    <div id="error-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="error-modal-title">
+      <div class="modal-card">
+        <button type="button" id="btn-modal-close-icon" class="modal-close-icon" aria-label="Close dialog">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        <div class="modal-header">
+          <div class="modal-icon-wrap" id="modal-icon-wrap">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <div class="modal-title-group">
+            <h3 id="error-modal-title" class="modal-title">Connection Notice</h3>
+            <span id="error-modal-subtitle" class="modal-subtitle">Attention required</span>
+          </div>
+        </div>
+        <div class="modal-body">
+          <div id="error-modal-message" class="modal-message-box">
+            Please select USB option in Android to proceed
+          </div>
+          <div id="error-modal-hint" class="modal-hint-box">
+            <p><strong>Recommended action:</strong></p>
+            <ul id="error-modal-steps">
+              <li>Open the <strong>HSCast</strong> app on your Android device.</li>
+              <li>Tap the matching mode option.</li>
+              <li>Click <strong>Start Mirroring</strong> again.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="btn-modal-close" class="btn-primary modal-action-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Global Toast Notification -->
+    <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

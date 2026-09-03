@@ -31,20 +31,40 @@ few milliseconds off the encode figure.
 > phone on this machine. Expect to fix small build issues on first `gradle`
 > run.
 
+## Quick Start (Windows Application)
+
+For a user-friendly graphical interface, simply double-click:
+```cmd
+Launch-HSCast.bat
+```
+or from PowerShell inside `windows/`:
+```powershell
+.\run.ps1
+```
+This automatically sets up the environment, verifies hardware acceleration, and opens the **HSCast Screen Casting Studio** GUI.
+
+### Windows Application Features
+- **Visual Mode Switcher**: 1-click toggling between *Phone to PC (Mirroring)* and *PC to Phone (Desktop)*.
+- **Smart Connection**: Auto-scans USB ADB devices and provides local Wi-Fi IP helper.
+- **Tuning & Presets**: *Gaming (60+ FPS)*, *Balanced (1080p 60FPS)*, and *Ultra Quality (HEVC)* with live bitrate slider.
+- **Built-in System Doctor**: Instant visual diagnostics for Python, PyAV, GPU Encoders (NVENC/QSV/AMF), PySDL2, DXGI capture, and ADB path configuration.
+- **Virtual Demo Simulator**: Test the entire streaming and control pipeline instantly without needing a physical phone attached.
+- **Remote Action Bar**: Android navigation hotkeys (Back, Home, Recents, Lock, Wake) right from the dashboard.
+
+---
+
 ## Setup
 
-### Windows
+### Windows CLI / Advanced
 
-From `hscast/windows`:
+From `windows`:
 
 ```bash
 .\run.ps1 doctor
 ```
 
-`run.ps1` creates `.venv`, installs the dependencies and runs the CLI.
-`doctor` reports the Python, PyAV, SDL2, capture-backend, codec and ADB status,
-and probes each encoder by actually opening it. Everything after that is
-`.\run.ps1 <command>`, or activate the venv and use `python -m hscast`.
+`run.ps1` creates `.venv`, installs dependencies and runs the app.
+Everything after that is `.\run.ps1 <command>`, `.\run.ps1 gui`, or activate the venv and use `python -m hscast`.
 
 Dependencies: `av` (FFmpeg), `PySDL2` + `pysdl2-dll`, `numpy`, `dxcam`, `mss`.
 Python 3.12–3.14 all work; 3.14 was used here.

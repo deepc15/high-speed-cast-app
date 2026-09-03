@@ -39,7 +39,7 @@ if (-not (Test-Path $python)) {
 }
 
 if (-not $CliArgs -or $CliArgs.Count -eq 0) {
-    $CliArgs = @('--help')
+    $CliArgs = @('gui')
 }
 
 & $python -m hscast @CliArgs

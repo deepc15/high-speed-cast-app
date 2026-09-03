@@ -31,6 +31,8 @@ class Packet(val type: Int, val flags: Int, val payload: ByteArray) {
  * hand it to the socket in one call, so a video frame costs one copy and one
  * write rather than a header write that Nagle-interacts with the payload.
  */
+class ModeMismatchException(message: String) : IOException(message)
+
 class PacketConn(
     private val socket: Socket,
     private val channel: Int,
@@ -49,13 +51,13 @@ class PacketConn(
 
     val peer: String get() = socket.inetAddress?.hostAddress ?: "?"
 
-    fun handshake() {
+    fun handshake(localMode: Int = Protocol.FLAG_MODE_UNSPECIFIED): Int {
         val ours = ByteArray(8)
         Protocol.MAGIC.copyInto(ours, 0)
         ours[4] = Protocol.VERSION.toByte()
         ours[5] = channel.toByte()
         ours[6] = role.toByte()
-        ours[7] = 0
+        ours[7] = localMode.toByte()
         synchronized(sendLock) {
             output.write(ours)
             output.flush()
@@ -72,6 +74,35 @@ class PacketConn(
         val peerChannel = theirs[5].toInt() and 0xFF
         if (peerChannel != channel) throw IOException("peer opened channel $peerChannel")
         if ((theirs[6].toInt() and 0xFF) == role) throw IOException("role collision")
+
+        val peerFlags = theirs[7].toInt() and 0xFF
+        val peerMode = peerFlags and 0x03
+        if (localMode != Protocol.FLAG_MODE_UNSPECIFIED && peerMode != Protocol.FLAG_MODE_UNSPECIFIED) {
+            if (localMode == Protocol.FLAG_MODE_WIFI && peerMode == Protocol.FLAG_MODE_USB) {
+                sendHandshakeError(Protocol.FLAG_ERROR_PLEASE_SELECT_USB)
+                throw ModeMismatchException("Please select USB option in Android to proceed")
+            }
+            if (localMode == Protocol.FLAG_MODE_USB && peerMode == Protocol.FLAG_MODE_WIFI) {
+                sendHandshakeError(Protocol.FLAG_ERROR_PLEASE_SELECT_WIFI)
+                throw ModeMismatchException("Please select Wi-Fi option in Android to proceed")
+            }
+        }
+        return peerFlags
+    }
+
+    fun sendHandshakeError(errorFlag: Int) {
+        val err = ByteArray(8)
+        Protocol.MAGIC.copyInto(err, 0)
+        err[4] = Protocol.VERSION.toByte()
+        err[5] = channel.toByte()
+        err[6] = role.toByte()
+        err[7] = errorFlag.toByte()
+        synchronized(sendLock) {
+            runCatching {
+                output.write(err)
+                output.flush()
+            }
+        }
     }
 
     // -- reading -------------------------------------------------------------

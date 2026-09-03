@@ -101,6 +101,19 @@ class Packet:
     payload: bytes
 
 
+FLAG_MODE_UNSPECIFIED = 0x00
+FLAG_MODE_WIFI = 0x01
+FLAG_MODE_USB = 0x02
+FLAG_ERROR_PLEASE_SELECT_USB = 0x41
+FLAG_ERROR_PLEASE_SELECT_WIFI = 0x42
+FLAG_CANCELLED = 0x80
+
+
+class ModeMismatchError(ProtocolError):
+    """Raised when the Android app and Windows app have mismatched connection modes (USB vs Wi-Fi)."""
+    pass
+
+
 class Conn:
     """Framed packet transport over one TCP socket.
 
@@ -118,10 +131,25 @@ class Conn:
 
     # -- setup ---------------------------------------------------------------
 
-    def handshake(self) -> None:
-        self.sock.sendall(_HANDSHAKE.pack(MAGIC, VERSION, self.channel, self.role, 0))
+    def handshake(self, mode: int = FLAG_MODE_UNSPECIFIED) -> None:
+        self.sock.sendall(_HANDSHAKE.pack(MAGIC, VERSION, self.channel, self.role, mode))
         raw = self._read_exact(_HANDSHAKE.size)
-        magic, version, channel, role, _flags = _HANDSHAKE.unpack(raw)
+        magic, version, channel, role, flags = _HANDSHAKE.unpack(raw)
+        if flags == FLAG_ERROR_PLEASE_SELECT_USB:
+            raise ModeMismatchError("Please select USB option in Android to proceed")
+        if flags == FLAG_ERROR_PLEASE_SELECT_WIFI:
+            raise ModeMismatchError("Please select Wi-Fi option in Android to proceed")
+        if flags & FLAG_CANCELLED:
+            raise ProtocolError("Screen capture was cancelled on the Android device.")
+
+        # Check mode mismatch if mode is specified and peer announced its mode
+        peer_mode = flags & 0x03
+        if mode != FLAG_MODE_UNSPECIFIED and peer_mode != FLAG_MODE_UNSPECIFIED:
+            if mode == FLAG_MODE_USB and peer_mode == FLAG_MODE_WIFI:
+                raise ModeMismatchError("Please select USB option in Android to proceed")
+            if mode == FLAG_MODE_WIFI and peer_mode == FLAG_MODE_USB:
+                raise ModeMismatchError("Please select Wi-Fi option in Android to proceed")
+
         if magic != MAGIC:
             raise ProtocolError(f"not an HSCast peer (magic {magic!r})")
         if version != VERSION:

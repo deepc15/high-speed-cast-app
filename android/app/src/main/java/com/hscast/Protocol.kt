@@ -31,6 +31,12 @@ object Protocol {
 
     const val FLAG_KEYFRAME = 0x01
     const val FLAG_CONFIG = 0x02
+    const val FLAG_MODE_UNSPECIFIED = 0x00
+    const val FLAG_MODE_WIFI = 0x01
+    const val FLAG_MODE_USB = 0x02
+    const val FLAG_ERROR_PLEASE_SELECT_USB = 0x41
+    const val FLAG_ERROR_PLEASE_SELECT_WIFI = 0x42
+    const val FLAG_CANCELLED = 0x80
 
     const val TOUCH_DOWN = 0
     const val TOUCH_UP = 1

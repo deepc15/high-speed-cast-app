@@ -5,3 +5,4 @@ pysdl2-dll>=2.28.0    # ships the SDL2 DLL so there is nothing to install by han
 numpy>=1.24
 dxcam>=0.0.5          # DXGI Desktop Duplication capture (Windows -> Android)
 mss>=9.0.1            # capture fallback
+pywebview>=5.0.0      # Native Windows desktop GUI (Edge WebView2)

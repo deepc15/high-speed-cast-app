@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="accent_green">#10B981</color>
+    <color name="accent_green_bg">#E6F4EA</color>
+    <color name="accent_green_dark">#059669</color>
+    <color name="accent_red">#EF4444</color>
+    <color name="accent_red_bg">#FCE8E6</color>
+    <color name="accent_red_dark">#DC2626</color>
+    <color name="bg_base">#F1F5F9</color>
+    <color name="bg_surface">#FFFFFF</color>
+    <color name="bg_surface_elevated">#F8FAFC</color>
+    <color name="border_medium">#CBD5E1</color>
+    <color name="border_subtle">#E2E8F0</color>
+    <color name="text_dim">#94A3B8</color>
+    <color name="text_main">#0F172A</color>
+    <color name="text_muted">#475569</color>
+    <color name="white">#FFFFFF</color>
+    <string name="accessibility_description">Lets the paired Windows PC send taps, swipes, scrolls and text to this device while casting. No data leaves the local connection.</string>
+    <string name="accessibility_label">HSCast remote input</string>
+    <string name="app_name">HSCast</string>
+    <string name="notification_channel">Screen casting</string>
+    <style name="Theme.HSCast" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/bg_base</item>
+        <item name="android:colorBackground">@color/bg_base</item>
+        <item name="colorPrimary">@color/accent_green</item>
+        <item name="colorPrimaryDark">@color/accent_green_dark</item>
+        <item name="colorAccent">@color/accent_green</item>
+        <item name="android:textColorPrimary">@color/text_main</item>
+        <item name="android:textColorSecondary">@color/text_muted</item>
+    </style>
+    <style name="Theme.HSCast.Fullscreen" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+</resources>

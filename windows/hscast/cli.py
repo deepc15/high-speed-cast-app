@@ -38,7 +38,12 @@ def build_parser() -> argparse.ArgumentParser:
                         help="do not raise process priority / timer resolution")
     parser.add_argument("--ffmpeg-log", action="store_true",
                         help="show libavcodec's own log output (muted by default)")
-    sub = parser.add_subparsers(dest="command", required=True)
+    sub = parser.add_subparsers(dest="command")
+
+    gui = sub.add_parser("gui", help="launch the modern graphical user interface")
+    gui.add_argument("--browser", action="store_true",
+                     help="open in default web browser instead of native window")
+    gui.add_argument("--port", type=int, default=None, help="HTTP server port")
 
     mirror = sub.add_parser("mirror", help="show the Android screen on this PC (+ control)")
     mirror.add_argument("--wifi", metavar="HOST", default=None,
@@ -53,7 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     mirror.add_argument("--no-launch", action="store_true", help="do not auto-start the Android app")
     mirror.add_argument("--record", metavar="FILE", default=None,
                         help="also write the raw elementary stream to FILE (.h264/.hevc)")
-    mirror.add_argument("--timeout", type=float, default=60.0, help="connect timeout, seconds")
+    mirror.add_argument("--timeout", type=float, default=120.0, help="connect timeout, seconds")
     mirror.add_argument("--exit-after", type=float, default=0.0, metavar="SECONDS",
                         help="close the window automatically after this long (for testing)")
 
@@ -131,7 +136,19 @@ def _run_doctor(_args) -> int:
     return doctor()
 
 
+def _run_gui(args) -> int:
+    from .gui import launch_gui
+
+    return launch_gui(browser_mode=getattr(args, "browser", False),
+                      port=getattr(args, "port", None))
+
+
 def main(argv: list[str] | None = None) -> int:
+    if argv is None:
+        argv = sys.argv[1:]
+    if not argv:
+        argv = ["gui"]
+
     args = build_parser().parse_args(argv)
     set_verbose(not args.quiet)
     if not args.ffmpeg_log:
@@ -145,7 +162,9 @@ def main(argv: list[str] | None = None) -> int:
             return _run_mirror(args)
         if args.command == "desktop":
             return _run_desktop(args)
-        return _run_doctor(args)
+        if args.command == "doctor":
+            return _run_doctor(args)
+        return _run_gui(args)
     except KeyboardInterrupt:
         return 130
     except Exception as exc:

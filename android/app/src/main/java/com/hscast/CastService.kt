@@ -83,18 +83,24 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
         if (projection != null) return START_STICKY
 
         val resultCode = intent?.getIntExtra(EXTRA_RESULT_CODE, 0) ?: 0
-        val resultData: Intent? = intent?.getParcelableExtra(EXTRA_RESULT_DATA)
+        val resultData: Intent? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent?.getParcelableExtra(EXTRA_RESULT_DATA, Intent::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent?.getParcelableExtra(EXTRA_RESULT_DATA)
+        }
+
         if (resultCode == 0 || resultData == null) {
-            Log.e(TAG, "no screen capture consent supplied")
+            Log.e(TAG, "no screen capture consent supplied (resultCode=$resultCode, resultData=$resultData)")
             stopSelf()
             return START_NOT_STICKY
         }
 
         settings = Settings(
-            fps = intent.getIntExtra(EXTRA_FPS, 60),
-            bitrateBps = intent.getIntExtra(EXTRA_BITRATE, 8_000_000),
-            maxSize = intent.getIntExtra(EXTRA_MAX_SIZE, 1600),
-            codec = intent.getIntExtra(EXTRA_CODEC, Protocol.CODEC_H264),
+            fps = intent?.getIntExtra(EXTRA_FPS, 60) ?: 60,
+            bitrateBps = intent?.getIntExtra(EXTRA_BITRATE, 8_000_000) ?: 8_000_000,
+            maxSize = intent?.getIntExtra(EXTRA_MAX_SIZE, 1600) ?: 1600,
+            codec = intent?.getIntExtra(EXTRA_CODEC, Protocol.CODEC_H264) ?: Protocol.CODEC_H264,
         )
 
         val manager = getSystemService(MediaProjectionManager::class.java)
@@ -139,12 +145,23 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
     // -- video channel -------------------------------------------------------
 
     private fun runVideoServer() {
-        val server = ServerSocket()
-        server.reuseAddress = true
-        try {
-            server.bind(InetSocketAddress(Protocol.VIDEO_PORT))
-        } catch (e: IOException) {
-            Log.e(TAG, "cannot bind video port ${Protocol.VIDEO_PORT}", e)
+        var server: ServerSocket? = null
+        var bound = false
+        for (attempt in 1..10) {
+            try {
+                server = ServerSocket()
+                server.reuseAddress = true
+                server.bind(InetSocketAddress(Protocol.VIDEO_PORT))
+                bound = true
+                break
+            } catch (e: IOException) {
+                Log.w(TAG, "cannot bind video port ${Protocol.VIDEO_PORT} attempt $attempt: ${e.message}")
+                runCatching { server?.close() }
+                try { Thread.sleep(300) } catch (_: InterruptedException) { break }
+            }
+        }
+        if (!bound || server == null) {
+            Log.e(TAG, "cannot bind video port ${Protocol.VIDEO_PORT} after retries")
             stopSelf()
             return
         }
@@ -170,20 +187,30 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
         try {
             conn.handshake()
             Log.i(TAG, "viewer connected from ${conn.peer}")
-            videoConn = conn
-            frames = queue
-            startEncoder(conn)
+            synchronized(encoderLock) {
+                videoConn = conn
+                frames = queue
+                startEncoder(conn)
+            }
             pumpFrames(conn, queue)
         } catch (e: Exception) {
             Log.i(TAG, "video session ended: ${e.message}")
         } finally {
             queue.close()
-            if (frames === queue) frames = null
-            if (videoConn === conn) {
-                videoConn = null
-                stopEncoder()
+            var shouldStop = false
+            synchronized(encoderLock) {
+                if (videoConn === conn) {
+                    videoConn = null
+                    frames = null
+                    stopEncoder()
+                    shouldStop = true
+                }
             }
             conn.close()
+            if (shouldStop && running) {
+                Log.i(TAG, "PC viewer closed casting window; stopping CastService automatically")
+                stopSelf()
+            }
         }
     }
 
@@ -211,12 +238,23 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
     // -- control channel -----------------------------------------------------
 
     private fun runControlServer() {
-        val server = ServerSocket()
-        server.reuseAddress = true
-        try {
-            server.bind(InetSocketAddress(Protocol.CONTROL_PORT))
-        } catch (e: IOException) {
-            Log.e(TAG, "cannot bind control port ${Protocol.CONTROL_PORT}", e)
+        var server: ServerSocket? = null
+        var bound = false
+        for (attempt in 1..10) {
+            try {
+                server = ServerSocket()
+                server.reuseAddress = true
+                server.bind(InetSocketAddress(Protocol.CONTROL_PORT))
+                bound = true
+                break
+            } catch (e: IOException) {
+                Log.w(TAG, "cannot bind control port ${Protocol.CONTROL_PORT} attempt $attempt: ${e.message}")
+                runCatching { server?.close() }
+                try { Thread.sleep(300) } catch (_: InterruptedException) { break }
+            }
+        }
+        if (!bound || server == null) {
+            Log.e(TAG, "cannot bind control port ${Protocol.CONTROL_PORT} after retries")
             return
         }
         controlServer = server
@@ -279,6 +317,7 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
 
     private fun startEncoder(conn: PacketConn) {
         synchronized(encoderLock) {
+            stopEncoder()
             val projection = this.projection ?: throw IllegalStateException("no projection")
             val metrics = realDisplayMetrics()
             lastRotation = currentRotation()
@@ -292,6 +331,7 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
                 fps = settings.fps,
                 bitrateBps = settings.bitrateBps,
                 codec = settings.codec,
+                iFrameIntervalSec = 1.0f,
             )
             conn.sendStreamInfo(
                 settings.codec, width, height, settings.fps, settings.bitrateBps, ByteArray(0),
@@ -457,7 +497,13 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
 
         @Volatile
         var running = false
-            private set
+            private set(value) {
+                field = value
+                runningListener?.invoke(value)
+            }
+
+        @Volatile
+        var runningListener: ((Boolean) -> Unit)? = null
 
         fun stop(context: Context) {
             context.startService(
