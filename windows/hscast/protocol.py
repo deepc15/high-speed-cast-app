@@ -23,6 +23,7 @@ CODEC_IDS = {v: k for k, v in CODEC_NAMES.items()}
 P_STREAM_INFO = 0x01
 P_VIDEO_CONFIG = 0x02
 P_VIDEO_FRAME = 0x03
+P_AUDIO_FRAME = 0x04
 
 P_TOUCH = 0x10
 P_KEY = 0x11
@@ -37,6 +38,12 @@ P_PONG = 0x31
 
 FLAG_KEYFRAME = 0x01
 FLAG_CONFIG = 0x02
+FLAG_MODE_UNSPECIFIED = 0x00
+FLAG_MODE_WIFI = 0x01
+FLAG_MODE_USB = 0x02
+FLAG_ERROR_PLEASE_SELECT_USB = 0x41
+FLAG_ERROR_PLEASE_SELECT_WIFI = 0x42
+FLAG_CANCELLED = 0x80
 
 TOUCH_DOWN, TOUCH_UP, TOUCH_MOVE, TOUCH_CANCEL = 0, 1, 2, 3
 KEY_DOWN, KEY_UP = 0, 1
@@ -64,6 +71,10 @@ MAX_PAYLOAD = 32 << 20  # a 1080p IDR is ~200 KB; anything near this is corrupti
 
 
 class ProtocolError(Exception):
+    pass
+
+
+class ModeMismatchError(ProtocolError):
     pass
 
 
@@ -101,19 +112,6 @@ class Packet:
     payload: bytes
 
 
-FLAG_MODE_UNSPECIFIED = 0x00
-FLAG_MODE_WIFI = 0x01
-FLAG_MODE_USB = 0x02
-FLAG_ERROR_PLEASE_SELECT_USB = 0x41
-FLAG_ERROR_PLEASE_SELECT_WIFI = 0x42
-FLAG_CANCELLED = 0x80
-
-
-class ModeMismatchError(ProtocolError):
-    """Raised when the Android app and Windows app have mismatched connection modes (USB vs Wi-Fi)."""
-    pass
-
-
 class Conn:
     """Framed packet transport over one TCP socket.
 
@@ -135,15 +133,15 @@ class Conn:
         self.sock.sendall(_HANDSHAKE.pack(MAGIC, VERSION, self.channel, self.role, mode))
         raw = self._read_exact(_HANDSHAKE.size)
         magic, version, channel, role, flags = _HANDSHAKE.unpack(raw)
-        if flags == FLAG_ERROR_PLEASE_SELECT_USB:
-            raise ModeMismatchError("Please select USB option in Android to proceed")
-        if flags == FLAG_ERROR_PLEASE_SELECT_WIFI:
-            raise ModeMismatchError("Please select Wi-Fi option in Android to proceed")
         if flags & FLAG_CANCELLED:
             raise ProtocolError("Screen capture was cancelled on the Android device.")
 
-        # Check mode mismatch if mode is specified and peer announced its mode
-        peer_mode = flags & 0x03
+        if flags == FLAG_ERROR_PLEASE_SELECT_USB:
+            raise ModeMismatchError("Please select USB option in Android app to proceed")
+        elif flags == FLAG_ERROR_PLEASE_SELECT_WIFI:
+            raise ModeMismatchError("Please select Wi-Fi option in Android app to proceed")
+
+        peer_mode = flags & (FLAG_MODE_WIFI | FLAG_MODE_USB)
         if mode != FLAG_MODE_UNSPECIFIED and peer_mode != FLAG_MODE_UNSPECIFIED:
             if mode == FLAG_MODE_USB and peer_mode == FLAG_MODE_WIFI:
                 raise ModeMismatchError("Please select USB option in Android to proceed")
@@ -248,20 +246,15 @@ class Conn:
 
 
 def parse_video_frame(payload: bytes) -> tuple[int, bool, memoryview]:
-    """Split a VIDEO_FRAME payload into ``(pts_us, keyframe, access_unit)``."""
     if len(payload) < _FRAME_HEAD.size:
         raise ProtocolError("short VIDEO_FRAME")
-    pts_us, keyframe = _FRAME_HEAD.unpack_from(payload)
-    return pts_us, bool(keyframe), memoryview(payload)[_FRAME_HEAD.size:]
+    pts_us, flags = _FRAME_HEAD.unpack_from(payload)
+    data = memoryview(payload)[_FRAME_HEAD.size:]
+    return pts_us, bool(flags & FLAG_KEYFRAME), data
 
 
-def parse_u32(payload: bytes) -> int:
-    if len(payload) < 4:
-        raise ProtocolError("short u32 payload")
-    return _U32.unpack_from(payload)[0]
-
-
-def parse_u64(payload: bytes) -> int:
+def parse_audio_frame(payload: bytes) -> tuple[int, bytes]:
     if len(payload) < 8:
-        raise ProtocolError("short u64 payload")
-    return _U64.unpack_from(payload)[0]
+        raise ProtocolError("short AUDIO_FRAME")
+    pts_us = _U64.unpack_from(payload, 0)[0]
+    return pts_us, payload[8:]

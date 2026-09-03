@@ -14,184 +14,187 @@
 12    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 12-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:5:5-79
 12-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:5:22-76
-13    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-13-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:6:5-77
-13-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:6:22-74
-14    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
-14-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:7:5-94
-14-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:7:22-91
-15    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-15-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:8:5-77
-15-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:8:22-74
-16    <uses-permission android:name="android.permission.WAKE_LOCK" />
-16-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:9:5-68
-16-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:9:22-65
-17
-18    <permission
-18-->[androidx.core:core:1.13.1] C:\Users\cdeep\.gradle\caches\transforms-4\8e0a0bff2d388b6446750efdf4a5758f\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
-19        android:name="com.hscast.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-19-->[androidx.core:core:1.13.1] C:\Users\cdeep\.gradle\caches\transforms-4\8e0a0bff2d388b6446750efdf4a5758f\transformed\core-1.13.1\AndroidManifest.xml:23:9-81
-20        android:protectionLevel="signature" />
-20-->[androidx.core:core:1.13.1] C:\Users\cdeep\.gradle\caches\transforms-4\8e0a0bff2d388b6446750efdf4a5758f\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
-21
-22    <uses-permission android:name="com.hscast.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
-22-->[androidx.core:core:1.13.1] C:\Users\cdeep\.gradle\caches\transforms-4\8e0a0bff2d388b6446750efdf4a5758f\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
-22-->[androidx.core:core:1.13.1] C:\Users\cdeep\.gradle\caches\transforms-4\8e0a0bff2d388b6446750efdf4a5758f\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
-23
-24    <application
-24-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:11:5-55:19
-25        android:allowBackup="false"
-25-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:12:9-36
-26        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-26-->[androidx.core:core:1.13.1] C:\Users\cdeep\.gradle\caches\transforms-4\8e0a0bff2d388b6446750efdf4a5758f\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
-27        android:debuggable="true"
-28        android:extractNativeLibs="false"
-29        android:icon="@android:drawable/ic_menu_share"
-29-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:13:9-55
-30        android:label="@string/app_name"
-30-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:14:9-41
-31        android:supportsRtl="true"
-31-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:15:9-35
-32        android:testOnly="true"
-33        android:theme="@style/Theme.HSCast" >
-33-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:16:9-44
-34        <activity
-34-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:18:9-28:20
-35            android:name="com.hscast.MainActivity"
-35-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:19:13-41
-36            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|density"
-36-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:23:13-114
-37            android:exported="true"
-37-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:20:13-36
-38            android:launchMode="singleTask"
-38-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:22:13-44
-39            android:windowSoftInputMode="adjustResize" >
-39-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:21:13-55
-40            <intent-filter>
-40-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:24:13-27:29
-41                <action android:name="android.intent.action.MAIN" />
-41-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:25:17-69
-41-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:25:25-66
-42
-43                <category android:name="android.intent.category.LAUNCHER" />
-43-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:26:17-77
-43-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:26:27-74
-44            </intent-filter>
-45        </activity>
-46
-47        <!--
-48             Landscape-capable, no recreation on rotation: the decoder and its
-49             surface survive the turn instead of being torn down mid-stream.
-50        -->
-51        <activity
-51-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:32:9-36:62
-52            android:name="com.hscast.ReceiveActivity"
-52-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:33:13-44
-53            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|density"
-53-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:35:13-95
-54            android:exported="false"
-54-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:34:13-37
-55            android:theme="@style/Theme.HSCast.Fullscreen" />
-55-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:36:13-59
-56
-57        <service
-57-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:38:9-41:63
-58            android:name="com.hscast.CastService"
-58-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:39:13-40
-59            android:exported="false"
-59-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:40:13-37
-60            android:foregroundServiceType="mediaProjection" />
-60-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:41:13-60
-61        <service
-61-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:43:9-54:19
-62            android:name="com.hscast.RemoteInputService"
-62-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:44:13-47
-63            android:exported="true"
-63-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:45:13-36
-64            android:label="@string/accessibility_label"
-64-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:46:13-56
-65            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" >
-65-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:47:13-79
-66            <intent-filter>
-66-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:48:13-50:29
-67                <action android:name="android.accessibilityservice.AccessibilityService" />
-67-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:49:17-92
-67-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:49:25-89
-68            </intent-filter>
-69
-70            <meta-data
-70-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:51:13-53:64
-71                android:name="android.accessibilityservice"
-71-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:52:17-60
-72                android:resource="@xml/remote_input_service" />
-72-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:53:17-61
-73        </service>
-74
-75        <provider
-75-->[androidx.emoji2:emoji2:1.3.0] C:\Users\cdeep\.gradle\caches\transforms-4\192474c036ec43764acdf6f3e34ae042\transformed\emoji2-1.3.0\AndroidManifest.xml:24:9-32:20
-76            android:name="androidx.startup.InitializationProvider"
-76-->[androidx.emoji2:emoji2:1.3.0] C:\Users\cdeep\.gradle\caches\transforms-4\192474c036ec43764acdf6f3e34ae042\transformed\emoji2-1.3.0\AndroidManifest.xml:25:13-67
-77            android:authorities="com.hscast.androidx-startup"
-77-->[androidx.emoji2:emoji2:1.3.0] C:\Users\cdeep\.gradle\caches\transforms-4\192474c036ec43764acdf6f3e34ae042\transformed\emoji2-1.3.0\AndroidManifest.xml:26:13-68
-78            android:exported="false" >
-78-->[androidx.emoji2:emoji2:1.3.0] C:\Users\cdeep\.gradle\caches\transforms-4\192474c036ec43764acdf6f3e34ae042\transformed\emoji2-1.3.0\AndroidManifest.xml:27:13-37
-79            <meta-data
-79-->[androidx.emoji2:emoji2:1.3.0] C:\Users\cdeep\.gradle\caches\transforms-4\192474c036ec43764acdf6f3e34ae042\transformed\emoji2-1.3.0\AndroidManifest.xml:29:13-31:52
-80                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-80-->[androidx.emoji2:emoji2:1.3.0] C:\Users\cdeep\.gradle\caches\transforms-4\192474c036ec43764acdf6f3e34ae042\transformed\emoji2-1.3.0\AndroidManifest.xml:30:17-75
-81                android:value="androidx.startup" />
-81-->[androidx.emoji2:emoji2:1.3.0] C:\Users\cdeep\.gradle\caches\transforms-4\192474c036ec43764acdf6f3e34ae042\transformed\emoji2-1.3.0\AndroidManifest.xml:31:17-49
-82            <meta-data
-82-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\cdeep\.gradle\caches\transforms-4\44d9374c2fc79a1ce870385ec114cea5\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:29:13-31:52
-83                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
-83-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\cdeep\.gradle\caches\transforms-4\44d9374c2fc79a1ce870385ec114cea5\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:30:17-78
-84                android:value="androidx.startup" />
-84-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\cdeep\.gradle\caches\transforms-4\44d9374c2fc79a1ce870385ec114cea5\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:31:17-49
-85            <meta-data
-85-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
-86                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
-86-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
-87                android:value="androidx.startup" />
-87-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
-88        </provider>
-89
-90        <receiver
-90-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
-91            android:name="androidx.profileinstaller.ProfileInstallReceiver"
-91-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
-92            android:directBootAware="false"
-92-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
-93            android:enabled="true"
-93-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
-94            android:exported="true"
-94-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
-95            android:permission="android.permission.DUMP" >
-95-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
-96            <intent-filter>
-96-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
-97                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
-97-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
-97-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
-98            </intent-filter>
-99            <intent-filter>
-99-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
-100                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
-100-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
-100-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
-101            </intent-filter>
-102            <intent-filter>
-102-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
-103                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
-103-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
-103-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
-104            </intent-filter>
-105            <intent-filter>
-105-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
-106                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
-106-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
-106-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
-107            </intent-filter>
-108        </receiver>
-109    </application>
-110
-111</manifest>
+13    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+13-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:6:5-71
+13-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:6:22-68
+14    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+14-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:7:5-77
+14-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:7:22-74
+15    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+15-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:8:5-94
+15-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:8:22-91
+16    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+16-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:9:5-77
+16-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:9:22-74
+17    <uses-permission android:name="android.permission.WAKE_LOCK" />
+17-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:10:5-68
+17-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:10:22-65
+18
+19    <permission
+19-->[androidx.core:core:1.13.1] C:\Users\cdeep\.gradle\caches\transforms-4\8e0a0bff2d388b6446750efdf4a5758f\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
+20        android:name="com.hscast.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+20-->[androidx.core:core:1.13.1] C:\Users\cdeep\.gradle\caches\transforms-4\8e0a0bff2d388b6446750efdf4a5758f\transformed\core-1.13.1\AndroidManifest.xml:23:9-81
+21        android:protectionLevel="signature" />
+21-->[androidx.core:core:1.13.1] C:\Users\cdeep\.gradle\caches\transforms-4\8e0a0bff2d388b6446750efdf4a5758f\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
+22
+23    <uses-permission android:name="com.hscast.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+23-->[androidx.core:core:1.13.1] C:\Users\cdeep\.gradle\caches\transforms-4\8e0a0bff2d388b6446750efdf4a5758f\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
+23-->[androidx.core:core:1.13.1] C:\Users\cdeep\.gradle\caches\transforms-4\8e0a0bff2d388b6446750efdf4a5758f\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
+24
+25    <application
+25-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:12:5-56:19
+26        android:allowBackup="false"
+26-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:13:9-36
+27        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+27-->[androidx.core:core:1.13.1] C:\Users\cdeep\.gradle\caches\transforms-4\8e0a0bff2d388b6446750efdf4a5758f\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
+28        android:debuggable="true"
+29        android:extractNativeLibs="false"
+30        android:icon="@android:drawable/ic_menu_share"
+30-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:14:9-55
+31        android:label="@string/app_name"
+31-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:15:9-41
+32        android:supportsRtl="true"
+32-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:16:9-35
+33        android:testOnly="true"
+34        android:theme="@style/Theme.HSCast" >
+34-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:17:9-44
+35        <activity
+35-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:19:9-29:20
+36            android:name="com.hscast.MainActivity"
+36-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:20:13-41
+37            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|density"
+37-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:24:13-114
+38            android:exported="true"
+38-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:21:13-36
+39            android:launchMode="singleTask"
+39-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:23:13-44
+40            android:windowSoftInputMode="adjustResize" >
+40-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:22:13-55
+41            <intent-filter>
+41-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:25:13-28:29
+42                <action android:name="android.intent.action.MAIN" />
+42-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:26:17-69
+42-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:26:25-66
+43
+44                <category android:name="android.intent.category.LAUNCHER" />
+44-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:27:17-77
+44-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:27:27-74
+45            </intent-filter>
+46        </activity>
+47
+48        <!--
+49             Landscape-capable, no recreation on rotation: the decoder and its
+50             surface survive the turn instead of being torn down mid-stream.
+51        -->
+52        <activity
+52-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:33:9-37:62
+53            android:name="com.hscast.ReceiveActivity"
+53-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:34:13-44
+54            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|density"
+54-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:36:13-95
+55            android:exported="false"
+55-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:35:13-37
+56            android:theme="@style/Theme.HSCast.Fullscreen" />
+56-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:37:13-59
+57
+58        <service
+58-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:39:9-42:63
+59            android:name="com.hscast.CastService"
+59-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:40:13-40
+60            android:exported="false"
+60-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:41:13-37
+61            android:foregroundServiceType="mediaProjection" />
+61-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:42:13-60
+62        <service
+62-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:44:9-55:19
+63            android:name="com.hscast.RemoteInputService"
+63-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:45:13-47
+64            android:exported="true"
+64-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:46:13-36
+65            android:label="@string/accessibility_label"
+65-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:47:13-56
+66            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" >
+66-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:48:13-79
+67            <intent-filter>
+67-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:49:13-51:29
+68                <action android:name="android.accessibilityservice.AccessibilityService" />
+68-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:50:17-92
+68-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:50:25-89
+69            </intent-filter>
+70
+71            <meta-data
+71-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:52:13-54:64
+72                android:name="android.accessibilityservice"
+72-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:53:17-60
+73                android:resource="@xml/remote_input_service" />
+73-->D:\MyApp\high-speed-cast-app\high-speed-cast-app\android\app\src\main\AndroidManifest.xml:54:17-61
+74        </service>
+75
+76        <provider
+76-->[androidx.emoji2:emoji2:1.3.0] C:\Users\cdeep\.gradle\caches\transforms-4\192474c036ec43764acdf6f3e34ae042\transformed\emoji2-1.3.0\AndroidManifest.xml:24:9-32:20
+77            android:name="androidx.startup.InitializationProvider"
+77-->[androidx.emoji2:emoji2:1.3.0] C:\Users\cdeep\.gradle\caches\transforms-4\192474c036ec43764acdf6f3e34ae042\transformed\emoji2-1.3.0\AndroidManifest.xml:25:13-67
+78            android:authorities="com.hscast.androidx-startup"
+78-->[androidx.emoji2:emoji2:1.3.0] C:\Users\cdeep\.gradle\caches\transforms-4\192474c036ec43764acdf6f3e34ae042\transformed\emoji2-1.3.0\AndroidManifest.xml:26:13-68
+79            android:exported="false" >
+79-->[androidx.emoji2:emoji2:1.3.0] C:\Users\cdeep\.gradle\caches\transforms-4\192474c036ec43764acdf6f3e34ae042\transformed\emoji2-1.3.0\AndroidManifest.xml:27:13-37
+80            <meta-data
+80-->[androidx.emoji2:emoji2:1.3.0] C:\Users\cdeep\.gradle\caches\transforms-4\192474c036ec43764acdf6f3e34ae042\transformed\emoji2-1.3.0\AndroidManifest.xml:29:13-31:52
+81                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+81-->[androidx.emoji2:emoji2:1.3.0] C:\Users\cdeep\.gradle\caches\transforms-4\192474c036ec43764acdf6f3e34ae042\transformed\emoji2-1.3.0\AndroidManifest.xml:30:17-75
+82                android:value="androidx.startup" />
+82-->[androidx.emoji2:emoji2:1.3.0] C:\Users\cdeep\.gradle\caches\transforms-4\192474c036ec43764acdf6f3e34ae042\transformed\emoji2-1.3.0\AndroidManifest.xml:31:17-49
+83            <meta-data
+83-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\cdeep\.gradle\caches\transforms-4\44d9374c2fc79a1ce870385ec114cea5\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:29:13-31:52
+84                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+84-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\cdeep\.gradle\caches\transforms-4\44d9374c2fc79a1ce870385ec114cea5\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:30:17-78
+85                android:value="androidx.startup" />
+85-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\cdeep\.gradle\caches\transforms-4\44d9374c2fc79a1ce870385ec114cea5\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:31:17-49
+86            <meta-data
+86-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
+87                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+87-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
+88                android:value="androidx.startup" />
+88-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
+89        </provider>
+90
+91        <receiver
+91-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
+92            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+92-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
+93            android:directBootAware="false"
+93-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
+94            android:enabled="true"
+94-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
+95            android:exported="true"
+95-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
+96            android:permission="android.permission.DUMP" >
+96-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
+97            <intent-filter>
+97-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
+98                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+98-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
+98-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
+99            </intent-filter>
+100            <intent-filter>
+100-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
+101                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+101-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
+101-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
+102            </intent-filter>
+103            <intent-filter>
+103-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
+104                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+104-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
+104-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
+105            </intent-filter>
+106            <intent-filter>
+106-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
+107                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+107-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
+107-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\cdeep\.gradle\caches\transforms-4\4e16cc280eaa0a1f5277c41379c36ea2\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
+108            </intent-filter>
+109        </receiver>
+110    </application>
+111
+112</manifest>

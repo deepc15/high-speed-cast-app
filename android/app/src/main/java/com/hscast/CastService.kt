@@ -34,7 +34,7 @@ import java.nio.ByteBuffer
  * The PC dials in (directly over Wi-Fi, or through `adb forward` over USB),
  * which means no discovery protocol and no inbound firewall rules on Windows.
  */
-class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
+class CastService : Service(), ScreenEncoder.Listener, AudioCapturer.Listener, ControlHandler.Sink {
 
     private data class Settings(
         val fps: Int,
@@ -48,6 +48,7 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
 
     private var projection: MediaProjection? = null
     private var encoder: ScreenEncoder? = null
+    private var audioCapturer: AudioCapturer? = null
     private var settings = Settings(60, 8_000_000, 1600, Protocol.CODEC_H264)
 
     private var videoServer: ServerSocket? = null
@@ -128,6 +129,8 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
 
     override fun onDestroy() {
         running = false
+        audioCapturer?.stop()
+        audioCapturer = null
         closeVideoSession()
         runCatching { videoServer?.close() }
         runCatching { controlServer?.close() }
@@ -356,11 +359,20 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
                     it.requestKeyFrame()
                 }
             }
+
+            if (audioCapturer == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val proj = this.projection
+                if (proj != null) {
+                    audioCapturer = AudioCapturer(proj, this).also { it.start() }
+                }
+            }
         }
     }
 
     private fun stopEncoder() {
         synchronized(encoderLock) {
+            audioCapturer?.stop()
+            audioCapturer = null
             encoder?.stop()
             encoder = null
         }
@@ -372,6 +384,12 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
 
     override fun onFrame(ptsUs: Long, source: ByteBuffer, size: Int, keyframe: Boolean) {
         frames?.submit(ptsUs, source, size, keyframe)
+    }
+
+    override fun onAudioFrame(ptsUs: Long, pcmData: ByteArray, size: Int) {
+        runCatching {
+            videoConn?.sendAudioFrame(ptsUs, pcmData, size)
+        }
     }
 
     override fun onEncoderError(error: Throwable) {

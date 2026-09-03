@@ -31,8 +31,6 @@ class Packet(val type: Int, val flags: Int, val payload: ByteArray) {
  * hand it to the socket in one call, so a video frame costs one copy and one
  * write rather than a header write that Nagle-interacts with the payload.
  */
-class ModeMismatchException(message: String) : IOException(message)
-
 class PacketConn(
     private val socket: Socket,
     private val channel: Int,
@@ -51,13 +49,13 @@ class PacketConn(
 
     val peer: String get() = socket.inetAddress?.hostAddress ?: "?"
 
-    fun handshake(localMode: Int = Protocol.FLAG_MODE_UNSPECIFIED): Int {
+    fun handshake(flags: Int = 0) {
         val ours = ByteArray(8)
         Protocol.MAGIC.copyInto(ours, 0)
         ours[4] = Protocol.VERSION.toByte()
         ours[5] = channel.toByte()
         ours[6] = role.toByte()
-        ours[7] = localMode.toByte()
+        ours[7] = flags.toByte()
         synchronized(sendLock) {
             output.write(ours)
             output.flush()
@@ -76,32 +74,10 @@ class PacketConn(
         if ((theirs[6].toInt() and 0xFF) == role) throw IOException("role collision")
 
         val peerFlags = theirs[7].toInt() and 0xFF
-        val peerMode = peerFlags and 0x03
-        if (localMode != Protocol.FLAG_MODE_UNSPECIFIED && peerMode != Protocol.FLAG_MODE_UNSPECIFIED) {
-            if (localMode == Protocol.FLAG_MODE_WIFI && peerMode == Protocol.FLAG_MODE_USB) {
-                sendHandshakeError(Protocol.FLAG_ERROR_PLEASE_SELECT_USB)
-                throw ModeMismatchException("Please select USB option in Android to proceed")
-            }
-            if (localMode == Protocol.FLAG_MODE_USB && peerMode == Protocol.FLAG_MODE_WIFI) {
-                sendHandshakeError(Protocol.FLAG_ERROR_PLEASE_SELECT_WIFI)
-                throw ModeMismatchException("Please select Wi-Fi option in Android to proceed")
-            }
-        }
-        return peerFlags
-    }
-
-    fun sendHandshakeError(errorFlag: Int) {
-        val err = ByteArray(8)
-        Protocol.MAGIC.copyInto(err, 0)
-        err[4] = Protocol.VERSION.toByte()
-        err[5] = channel.toByte()
-        err[6] = role.toByte()
-        err[7] = errorFlag.toByte()
-        synchronized(sendLock) {
-            runCatching {
-                output.write(err)
-                output.flush()
-            }
+        if (peerFlags == Protocol.FLAG_ERROR_PLEASE_SELECT_USB) {
+            throw ModeMismatchException("Please select USB option in Android app to proceed")
+        } else if (peerFlags == Protocol.FLAG_ERROR_PLEASE_SELECT_WIFI) {
+            throw ModeMismatchException("Please select Wi-Fi option in Android app to proceed")
         }
     }
 
@@ -189,6 +165,20 @@ class PacketConn(
     fun sendVideoFrame(ptsUs: Long, data: ByteArray, size: Int, keyframe: Boolean) =
         sendVideoFrame(ptsUs, ByteBuffer.wrap(data, 0, size), size, keyframe)
 
+    fun sendAudioFrame(ptsUs: Long, data: ByteArray, size: Int) {
+        synchronized(sendLock) {
+            val total = HEADER + 8 + size
+            ensure(total)
+            sendBuf[0] = Protocol.P_AUDIO_FRAME.toByte()
+            sendBuf[1] = 0
+            putInt(sendBuf, 2, 8 + size)
+            putLong(sendBuf, HEADER, ptsUs)
+            data.copyInto(sendBuf, HEADER + 8, 0, size)
+            output.write(sendBuf, 0, total)
+            output.flush()
+        }
+    }
+
     fun sendRequestKeyframe() = send(Protocol.P_REQUEST_KEYFRAME)
 
     fun sendPong(clockUs: Long) {
@@ -207,3 +197,5 @@ class PacketConn(
         private val EMPTY = ByteArray(0)
     }
 }
+
+class ModeMismatchException(message: String) : IOException(message)

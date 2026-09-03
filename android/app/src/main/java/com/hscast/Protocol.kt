@@ -17,6 +17,7 @@ object Protocol {
     const val P_STREAM_INFO = 0x01
     const val P_VIDEO_CONFIG = 0x02
     const val P_VIDEO_FRAME = 0x03
+    const val P_AUDIO_FRAME = 0x04
 
     const val P_TOUCH = 0x10
     const val P_KEY = 0x11

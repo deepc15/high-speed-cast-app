@@ -16,6 +16,7 @@ import threading
 from dataclasses import dataclass, field
 
 from . import protocol as P
+from .audio_player import AudioPlayer
 from .control import HOTKEY_HELP, ControlSender
 from .decoder import Decoder
 from .pipeline import Mailbox
@@ -52,13 +53,14 @@ class MirrorOptions:
 class _Reader(threading.Thread):
     def __init__(self, conn: P.Conn, mailbox: Mailbox, hwaccel: bool,
                  control: P.Conn | None, record_path: str | None,
-                 info: P.StreamInfo):
+                 info: P.StreamInfo, audio_player: AudioPlayer | None = None):
         super().__init__(name="video-reader", daemon=True)
         self.conn = conn
         self.mailbox = mailbox
         self.hwaccel = hwaccel
         self.control = control
         self.info = info
+        self.audio_player = audio_player
         self.error: BaseException | None = None
         self.running = True
         self.meter = Meter("recv")
@@ -89,6 +91,10 @@ class _Reader(threading.Thread):
                 packet = self.conn.read_packet()
                 if packet.type == P.P_VIDEO_FRAME:
                     self._on_frame(packet)
+                elif packet.type == P.P_AUDIO_FRAME:
+                    _pts_us, pcm_data = P.parse_audio_frame(packet.payload)
+                    if self.audio_player:
+                        self.audio_player.play(pcm_data)
                 elif packet.type == P.P_STREAM_INFO:
                     info = P.StreamInfo.unpack(packet.payload)
                     log(f"stream: {info.codec_name} {info.width}x{info.height} "
@@ -302,56 +308,60 @@ def _session(opts: MirrorOptions, video: P.Conn, control: P.Conn | None) -> int:
         f"{info.bitrate / 1e6:.1f} Mb/s")
     log("opening casting display window...")
 
+    audio_player = AudioPlayer()
     mailbox = Mailbox()
-    reader = _Reader(video, mailbox, opts.hwaccel, control, opts.record, info)
+    reader = _Reader(video, mailbox, opts.hwaccel, control, opts.record, info, audio_player)
     pong = _PongReader(control) if control else None
 
-    with Renderer("HSCast - Android", info.width, info.height, opts.vsync) as renderer:
-        log("casting window opened successfully!")
-        sender = ControlSender(control, renderer, info.bitrate)
-        if control:
-            log("control enabled:\n" + HOTKEY_HELP)
-        reader.start()
-        if pong:
-            pong.start()
-
-        meter = Meter("display", interval=opts.stats_interval)
-        last_ping = 0
-        deadline = now_us() + int(opts.exit_after * 1e6) if opts.exit_after else 0
-        try:
-            while not renderer.closed and not sender.quit_requested and reader.running:
-                if deadline and now_us() > deadline:
-                    log(f"--exit-after {opts.exit_after:g}s reached")
-                    break
-                sender.handle_all(renderer.poll_events())
-
-                frame = mailbox.take(0.002)
-                if frame is not None:
-                    renderer.draw(frame)
-                    meter.frame()
-
-                now = now_us()
-                if control and now - last_ping > 1_000_000:
-                    last_ping = now
-                    try:
-                        control.send_ping(now)
-                    except OSError:
-                        pass
-                    # Retitling is an X/Win32 round trip, so do it on the ping
-                    # tick rather than on every pass of a ~500 Hz loop.
-                    if pong and pong.rtt_ms is not None:
-                        renderer.set_title(
-                            f"HSCast - Android  {renderer.src_w}x{renderer.src_h}  "
-                            f"rtt {pong.rtt_ms:.1f} ms"
-                        )
-                meter.maybe_report()
-                reader.meter.maybe_report()
-        except KeyboardInterrupt:
-            log("interrupted")
-        finally:
-            reader.running = False
+    try:
+        with Renderer("HSCast - Android", info.width, info.height, opts.vsync) as renderer:
+            log("casting window opened successfully!")
+            sender = ControlSender(control, renderer, info.bitrate)
+            if control:
+                log("control enabled:\n" + HOTKEY_HELP)
+            reader.start()
             if pong:
-                pong.running = False
+                pong.start()
+
+            meter = Meter("display", interval=opts.stats_interval)
+            last_ping = 0
+            deadline = now_us() + int(opts.exit_after * 1e6) if opts.exit_after else 0
+            try:
+                while not renderer.closed and not sender.quit_requested and reader.running:
+                    if deadline and now_us() > deadline:
+                        log(f"--exit-after {opts.exit_after:g}s reached")
+                        break
+                    sender.handle_all(renderer.poll_events())
+
+                    frame = mailbox.take(0.002)
+                    if frame is not None:
+                        renderer.draw(frame)
+                        meter.frame()
+
+                    now = now_us()
+                    if control and now - last_ping > 1_000_000:
+                        last_ping = now
+                        try:
+                            control.send_ping(now)
+                        except OSError:
+                            pass
+                        # Retitling is an X/Win32 round trip, so do it on the ping
+                        # tick rather than on every pass of a ~500 Hz loop.
+                        if pong and pong.rtt_ms is not None:
+                            renderer.set_title(
+                                f"HSCast - Android  {renderer.src_w}x{renderer.src_h}  "
+                                f"rtt {pong.rtt_ms:.1f} ms"
+                            )
+                    meter.maybe_report()
+                    reader.meter.maybe_report()
+            except KeyboardInterrupt:
+                log("interrupted")
+            finally:
+                reader.running = False
+                if pong:
+                    pong.running = False
+    finally:
+        audio_player.close()
 
     if reader.error and not isinstance(reader.error, (ConnectionError, OSError)):
         log(f"reader failed: {type(reader.error).__name__}: {reader.error}")
