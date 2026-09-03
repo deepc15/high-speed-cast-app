@@ -33,7 +33,10 @@ import java.net.Inet4Address
 import java.net.InetSocketAddress
 import java.net.NetworkInterface
 import java.net.ServerSocket
+import java.net.Socket
 import java.util.Collections
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -41,16 +44,23 @@ class MainActivity : AppCompatActivity() {
     private lateinit var modeRadioGroup: RadioGroup
     private lateinit var modeWifi: RadioButton
     private lateinit var modeUsb: RadioButton
+
+    private lateinit var receiverModeRadioGroup: RadioGroup
+    private lateinit var receiverModeWifi: RadioButton
+    private lateinit var receiverModeUsb: RadioButton
+
     private lateinit var fpsField: AutoCompleteTextView
     private lateinit var bitrateField: AutoCompleteTextView
     private lateinit var maxSizeField: AutoCompleteTextView
-    private lateinit var hostField: EditText
+    private lateinit var hostField: AutoCompleteTextView
     private lateinit var portField: EditText
     private lateinit var hevcBox: CheckBox
     private lateinit var inputState: TextView
     private lateinit var deviceIp: TextView
     private lateinit var devicePorts: TextView
     private lateinit var senderHint: TextView
+    private lateinit var receiverHint: TextView
+    private lateinit var scanPcsBtn: Button
     private lateinit var toggleCastBtn: Button
     private lateinit var statusPill: TextView
     private lateinit var homeContainer: LinearLayout
@@ -59,6 +69,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var consent: ActivityResultLauncher<Intent>
 
     private fun isWifiMode(): Boolean = modeWifi.isChecked
+    private fun isReceiverWifiMode(): Boolean = receiverModeWifi.isChecked
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -76,6 +87,7 @@ class MainActivity : AppCompatActivity() {
         homeContainer = findViewById(R.id.homeContainer)
         configContainer = findViewById(R.id.configContainer)
 
+        // Sender Mode Controls
         modeRadioGroup = findViewById(R.id.modeRadioGroup)
         modeWifi = findViewById(R.id.modeWifi)
         modeUsb = findViewById(R.id.modeUsb)
@@ -86,7 +98,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             modeWifi.isChecked = true
         }
-        updateModeSelectorUI()
 
         modeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
             save()
@@ -99,6 +110,24 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Receiver Mode Controls
+        receiverModeRadioGroup = findViewById(R.id.receiverModeRadioGroup)
+        receiverModeWifi = findViewById(R.id.receiverModeWifi)
+        receiverModeUsb = findViewById(R.id.receiverModeUsb)
+
+        val savedReceiverMode = prefs.getString(KEY_RECEIVER_MODE, "wifi") ?: "wifi"
+        if (savedReceiverMode == "usb") {
+            receiverModeUsb.isChecked = true
+        } else {
+            receiverModeWifi.isChecked = true
+        }
+
+        receiverModeRadioGroup.setOnCheckedChangeListener { _, _ ->
+            save()
+            updateReceiverModeSelectorUI()
+            updateReceiverInfo()
+        }
+
         fpsField = findViewById(R.id.fps)
         bitrateField = findViewById(R.id.bitrate)
         maxSizeField = findViewById(R.id.maxSize)
@@ -109,6 +138,8 @@ class MainActivity : AppCompatActivity() {
         deviceIp = findViewById(R.id.deviceIp)
         devicePorts = findViewById(R.id.devicePorts)
         senderHint = findViewById(R.id.senderHint)
+        receiverHint = findViewById(R.id.receiverHint)
+        scanPcsBtn = findViewById(R.id.scanPcsBtn)
         toggleCastBtn = findViewById(R.id.toggleCast)
         statusPill = findViewById(R.id.statusPill)
 
@@ -119,9 +150,16 @@ class MainActivity : AppCompatActivity() {
         fpsField.setText(prefs.getInt(KEY_FPS, 60).toString(), false)
         bitrateField.setText(prefs.getString(KEY_BITRATE, "8"), false)
         maxSizeField.setText(prefs.getInt(KEY_MAX_SIZE, 1600).toString(), false)
-        hostField.setText(prefs.getString(KEY_HOST, "127.0.0.1"))
+        hostField.setText(prefs.getString(KEY_HOST, "127.0.0.1"), false)
         portField.setText(prefs.getInt(KEY_PORT, 8767).toString())
         hevcBox.isChecked = prefs.getBoolean(KEY_HEVC, false)
+
+        updateModeSelectorUI()
+        updateReceiverModeSelectorUI()
+
+        scanPcsBtn.setOnClickListener {
+            scanLocalNetworkForPcs()
+        }
 
         // Listen for CastService status changes in real-time
         CastService.runningListener = { isRunning ->
@@ -156,7 +194,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         val howToConnectReceiverBtn = findViewById<Button>(R.id.howToConnectReceiverBtn)
-        val receiverHint = findViewById<TextView>(R.id.receiverHint)
         howToConnectReceiverBtn.setOnClickListener {
             receiverHint.visibility = if (receiverHint.visibility == View.GONE) View.VISIBLE else View.GONE
         }
@@ -222,6 +259,82 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateReceiverModeSelectorUI() {
+        if (isReceiverWifiMode()) {
+            receiverModeWifi.setBackgroundResource(R.drawable.bg_segment_active_green)
+            receiverModeWifi.setTextColor(Color.WHITE)
+            receiverModeUsb.setBackgroundColor(Color.TRANSPARENT)
+            receiverModeUsb.setTextColor(Color.parseColor("#475569"))
+        } else {
+            receiverModeUsb.setBackgroundResource(R.drawable.bg_segment_active_green)
+            receiverModeUsb.setTextColor(Color.WHITE)
+            receiverModeWifi.setBackgroundColor(Color.TRANSPARENT)
+            receiverModeWifi.setTextColor(Color.parseColor("#475569"))
+        }
+    }
+
+    private fun updateReceiverInfo() {
+        if (isReceiverWifiMode()) {
+            scanPcsBtn.visibility = View.VISIBLE
+            receiverHint.text = "On the PC run (over Wi-Fi):\npython -m hscast desktop --wifi\nThen scan or select the PC's IP address below."
+            if (hostField.text.toString().trim() == "127.0.0.1") {
+                hostField.setText("", false)
+            }
+            scanLocalNetworkForPcs()
+        } else {
+            scanPcsBtn.visibility = View.GONE
+            hostField.setText("127.0.0.1", false)
+            receiverHint.text = "On the PC run (over USB):\npython -m hscast desktop\nOver USB, the host is 127.0.0.1."
+        }
+    }
+
+    private fun scanLocalNetworkForPcs() {
+        val ip = getDeviceIpAddress()
+        if (ip == "Unavailable" || !ip.contains(".")) {
+            toast("Connect to Wi-Fi to scan for PCs")
+            return
+        }
+
+        val prefix = ip.substringBeforeLast(".") + "."
+        toast("Scanning Wi-Fi network for active Desktop Cast PCs...")
+
+        Thread({
+            val discoveredPcs = Collections.synchronizedList(mutableListOf<String>())
+            val executor = Executors.newFixedThreadPool(32)
+
+            for (i in 1..254) {
+                val targetIp = "$prefix$i"
+                if (targetIp == ip) continue // Skip the phone's own IP
+
+                executor.execute {
+                    try {
+                        val socket = Socket()
+                        socket.connect(InetSocketAddress(targetIp, 8767), 350)
+                        socket.close()
+                        discoveredPcs.add(targetIp)
+                    } catch (_: Exception) {
+                        // Port 8767 is closed: "Start Desktop Cast" is not active on this IP
+                    }
+                }
+            }
+
+            executor.shutdown()
+            executor.awaitTermination(3, TimeUnit.SECONDS)
+
+            runOnUiThread {
+                if (discoveredPcs.isNotEmpty()) {
+                    val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, discoveredPcs)
+                    hostField.setAdapter(adapter)
+                    hostField.showDropDown()
+                    hostField.setText(discoveredPcs[0], false)
+                    toast("Found ${discoveredPcs.size} active Desktop Cast PC(s)")
+                } else {
+                    toast("No active Desktop Cast PCs found. Click 'Start Desktop Cast' in the Windows app first.")
+                }
+            }
+        }, "hscast-pc-scanner").start()
+    }
+
     private fun startWiFiListener() {
         if (isWifiMode() && !CastService.running) {
             WiFiCastListener.start {
@@ -279,7 +392,9 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateDeviceInfo()
+        updateReceiverInfo()
         updateModeSelectorUI()
+        updateReceiverModeSelectorUI()
         updateCastButtonState(CastService.running)
         if (isWifiMode() && !CastService.running) {
             startWiFiListener()
@@ -341,7 +456,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             "recv" -> {
-                intent.getStringExtra("host")?.let { hostField.setText(it) }
+                intent.getStringExtra("host")?.let { hostField.setText(it, false) }
                 intent.getStringExtra("port")?.let { portField.setText(it) }
                 openReceiver()
             }
@@ -404,6 +519,7 @@ class MainActivity : AppCompatActivity() {
     private fun save() {
         prefs.edit()
             .putString(KEY_MODE, if (isWifiMode()) "wifi" else "usb")
+            .putString(KEY_RECEIVER_MODE, if (isReceiverWifiMode()) "wifi" else "usb")
             .putInt(KEY_FPS, intField(fpsField, 60))
             .putString(KEY_BITRATE, bitrateField.text.toString())
             .putInt(KEY_MAX_SIZE, intField(maxSizeField, 1600))
@@ -492,6 +608,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val KEY_MODE = "mode_type"
+        private const val KEY_RECEIVER_MODE = "receiver_mode_type"
         private const val KEY_FPS = "fps"
         private const val KEY_BITRATE = "bitrate"
         private const val KEY_MAX_SIZE = "maxSize"

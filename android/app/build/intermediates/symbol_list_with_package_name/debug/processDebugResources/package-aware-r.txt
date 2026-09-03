@@ -801,10 +801,14 @@ id progress_horizontal
 id radio
 id receive
 id receiverHint
+id receiverModeRadioGroup
+id receiverModeUsb
+id receiverModeWifi
 id report_drawn
 id right_icon
 id right_side
 id root
+id scanPcsBtn
 id screen
 id scrollIndicatorDown
 id scrollIndicatorUp

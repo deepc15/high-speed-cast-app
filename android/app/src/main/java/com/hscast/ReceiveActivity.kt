@@ -27,6 +27,7 @@ class ReceiveActivity : AppCompatActivity() {
 
     private var host: String = "127.0.0.1"
     private var port: Int = 8767
+    private var receiverMode: String = "wifi"
 
     private var network: Thread? = null
 
@@ -51,6 +52,7 @@ class ReceiveActivity : AppCompatActivity() {
 
         host = intent.getStringExtra(EXTRA_HOST) ?: host
         port = intent.getIntExtra(EXTRA_PORT, port)
+        receiverMode = intent.getStringExtra(EXTRA_RECEIVER_MODE) ?: receiverMode
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         hideSystemBars()
@@ -138,9 +140,14 @@ class ReceiveActivity : AppCompatActivity() {
                 val socket = Socket()
                 socket.connect(InetSocketAddress(host, port), CONNECT_TIMEOUT_MS)
                 conn = PacketConn(socket, Protocol.CH_VIDEO, Protocol.ROLE_RECEIVER)
-                conn.handshake()
+                val modeFlag = if (receiverMode == "usb") Protocol.FLAG_MODE_USB else Protocol.FLAG_MODE_WIFI
+                conn.handshake(modeFlag)
                 setStatus("Waiting for video ...")
                 readStream(conn, holder)
+            } catch (e: ModeMismatchException) {
+                setStatus(e.message)
+                Log.w(TAG, "mode mismatch: ${e.message}")
+                break // Don't reconnect endlessly on mode mismatch
             } catch (e: Exception) {
                 if (running) Log.i(TAG, "receive session ended: ${e.message}")
             } finally {
@@ -230,5 +237,6 @@ class ReceiveActivity : AppCompatActivity() {
 
         const val EXTRA_HOST = "host"
         const val EXTRA_PORT = "port"
+        const val EXTRA_RECEIVER_MODE = "receiver_mode"
     }
 }

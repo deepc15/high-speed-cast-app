@@ -22,13 +22,10 @@ ANDROID_PACKAGE = "com.hscast"
 ANDROID_MAIN_ACTIVITY = f"{ANDROID_PACKAGE}/.MainActivity"
 
 _ADB_HINTS = (
-    r"D:\MyApp\Softwares\Insatalled\AndroidSDK\platform-tools\adb.exe",
     os.path.expandvars(r"%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe"),
     os.path.expandvars(r"%ANDROID_HOME%\platform-tools\adb.exe"),
     os.path.expandvars(r"%ANDROID_SDK_ROOT%\platform-tools\adb.exe"),
     r"C:\Program Files\Android\platform-tools\adb.exe",
-    r"D:\Android\Sdk\platform-tools\adb.exe",
-    r"C:\Android\Sdk\platform-tools\adb.exe",
 )
 
 
@@ -46,37 +43,6 @@ def find_adb() -> str:
     for hint in _ADB_HINTS:
         if hint and os.path.isfile(hint):
             return hint
-
-    # Check android/local.properties in workspace
-    try:
-        cur = os.path.dirname(os.path.abspath(__file__))
-        for _ in range(5):
-            props = os.path.join(cur, "android", "local.properties")
-            if os.path.isfile(props):
-                with open(props, "r", encoding="utf-8", errors="ignore") as f:
-                    for line in f:
-                        if line.startswith("sdk.dir="):
-                            sdk = line.split("=", 1)[1].strip().replace(r"\:", ":").replace(r"\\", "\\")
-                            cand = os.path.join(sdk, "platform-tools", "adb.exe")
-                            if os.path.isfile(cand):
-                                return cand
-            cur = os.path.dirname(cur)
-    except Exception:
-        pass
-
-    # Check running processes
-    try:
-        out = subprocess.run(
-            ["powershell", "-NoProfile", "-Command",
-             "Get-Process adb -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Path -Unique"],
-            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=3,
-            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-        ).stdout.strip()
-        if out and os.path.isfile(out):
-            return out
-    except Exception:
-        pass
-
     raise TransportError(
         "adb not found. Install Android platform-tools and put adb on PATH, "
         "or use --wifi <phone-ip> to skip USB entirely."
@@ -99,8 +65,6 @@ class Adb:
             self._argv(list(args)),
             capture_output=True,
             text=True,
-            encoding="utf-8",
-            errors="replace",
             timeout=timeout,
             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
@@ -112,13 +76,7 @@ class Adb:
 
     def devices(self) -> list[str]:
         out = subprocess.run(
-            [self.exe, "devices"],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=20,
-            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            [self.exe, "devices"], capture_output=True, text=True, timeout=20
         ).stdout
         serials = []
         for line in out.splitlines()[1:]:
@@ -267,26 +225,49 @@ def connect(host: str, port: int, channel: int, role: int,
 
 
 def listen_one(port: int, channel: int, role: int, timeout: float = 120.0,
-               bind: str = "0.0.0.0") -> Conn:
-    """Accept exactly one connection on ``port`` and hand back the framed conn."""
+               bind: str = "0.0.0.0", conn_mode: str = "usb") -> Conn:
+    """Accept exactly one valid connection on ``port`` and hand back the framed conn."""
+    from hscast.protocol import (
+        FLAG_MODE_USB, FLAG_MODE_WIFI, FLAG_MODE_UNSPECIFIED, ModeMismatchError
+    )
+    mode_flag = FLAG_MODE_USB if conn_mode == "usb" else (FLAG_MODE_WIFI if conn_mode == "wifi" else FLAG_MODE_UNSPECIFIED)
+    deadline = time.monotonic() + timeout
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     try:
         server.bind((bind, port))
-        server.listen(1)
-        server.settimeout(timeout)
+        server.listen(5)
         log(f"listening on {bind}:{port} (channel {channel})")
-        try:
-            sock, addr = server.accept()
-        except socket.timeout:
-            raise TransportError(f"no peer connected on port {port} within {timeout:g}s")
+
+        while time.monotonic() < deadline:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            server.settimeout(min(remaining, 2.0))
+            try:
+                sock, addr = server.accept()
+            except socket.timeout:
+                continue
+
+            sock.settimeout(3.0)
+            conn = Conn(sock, channel, role)
+            try:
+                conn.handshake(mode=mode_flag)
+                sock.settimeout(None)
+                log(f"accepted {addr[0]}:{addr[1]} (channel {channel})")
+                return conn
+            except ModeMismatchError as exc:
+                log(f"validation failed: {exc}")
+                conn.close()
+                raise TransportError(str(exc))
+            except (ConnectionError, OSError, ProtocolError) as exc:
+                log(f"ignored probe or incomplete handshake from {addr[0]}:{addr[1]} ({exc})")
+                conn.close()
+                continue
+
+        raise TransportError(f"no peer connected on port {port} within {timeout:g}s")
     finally:
         server.close()
-    sock.settimeout(None)
-    conn = Conn(sock, channel, role)
-    conn.handshake()
-    log(f"accepted {addr[0]}:{addr[1]} (channel {channel})")
-    return conn
 
 
 def local_ipv4() -> str:

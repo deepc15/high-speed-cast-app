@@ -12,6 +12,7 @@ click is on the wire in single-digit milliseconds even at 30 fps.
 
 from __future__ import annotations
 
+import re
 import threading
 from dataclasses import dataclass, field
 
@@ -175,7 +176,8 @@ def _setup_transport(opts: MirrorOptions, tunnels: Tunnels) -> tuple[str, int, i
             "shell", "run-as", "com.hscast", "cat", "/data/data/com.hscast/shared_prefs/hscast.xml",
             check=False, timeout=1.5,
         )
-        if 'name="mode_type"' in pref_out and ('>wifi<' in pref_out or 'value="wifi"' in pref_out):
+        match = re.search(r'name="mode_type"[^>]*>([^<]+)<', pref_out)
+        if match and match.group(1).strip() == "wifi":
             try:
                 adb.run(
                     "shell", "am", "broadcast", "-a", "com.hscast.VALIDATION_ERROR",

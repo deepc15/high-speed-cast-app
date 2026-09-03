@@ -10,6 +10,7 @@ stalling the encoder.
 
 from __future__ import annotations
 
+import re
 import threading
 from dataclasses import dataclass
 
@@ -20,6 +21,7 @@ from .pipeline import FrameWriter
 from .transport import (
     DESKTOP_VIDEO_PORT,
     Adb,
+    TransportError,
     Tunnels,
     listen_one,
     local_ipv4,
@@ -107,6 +109,29 @@ def _setup_transport(opts: DesktopOptions, tunnels: Tunnels) -> None:
     serial = adb.require_device()
     tunnels.adb = adb
     log(f"usb device: {serial}")
+
+    # Mode validation for Desktop Receiver mode: if USB is selected on PC, verify Android app is not set to Wi-Fi
+    try:
+        pref_out = adb.run(
+            "shell", "run-as", "com.hscast", "cat", "/data/data/com.hscast/shared_prefs/hscast.xml",
+            check=False, timeout=1.5,
+        )
+        match = re.search(r'name="receiver_mode_type"[^>]*>([^<]+)<', pref_out)
+        if match and match.group(1).strip() == "wifi":
+            try:
+                adb.run(
+                    "shell", "am", "broadcast", "-a", "com.hscast.VALIDATION_ERROR",
+                    "--es", "message", "Please select USB option in Android to proceed",
+                    check=False, timeout=1.0,
+                )
+            except Exception:
+                pass
+            raise TransportError("Please select USB option in Android to proceed")
+    except TransportError:
+        raise
+    except Exception:
+        pass
+
     tunnels.reverse(opts.port, opts.port)
     if opts.launch:
         if not adb.app_installed():
@@ -120,13 +145,29 @@ def _setup_transport(opts: DesktopOptions, tunnels: Tunnels) -> None:
 
 def run_desktop(opts: DesktopOptions) -> int:
     with Tunnels() as tunnels:
-        _setup_transport(opts, tunnels)
-        conn = listen_one(opts.port, P.CH_VIDEO, P.ROLE_SENDER,
-                          timeout=opts.accept_timeout)
         try:
+            _setup_transport(opts, tunnels)
+        except TransportError as exc:
+            msg = str(exc)
+            if "Please select" in msg:
+                log(f"validation failed: {msg}")
+                return 2
+            raise
+
+        conn_mode = "usb" if opts.usb else "wifi"
+        try:
+            conn = listen_one(opts.port, P.CH_VIDEO, P.ROLE_SENDER,
+                              timeout=opts.accept_timeout, conn_mode=conn_mode)
             return _session(opts, conn)
+        except TransportError as exc:
+            msg = str(exc)
+            if "Please select" in msg:
+                log(f"validation failed: {msg}")
+                return 2
+            raise
         finally:
-            conn.close()
+            if 'conn' in locals() and conn:
+                conn.close()
 
 
 def _session(opts: DesktopOptions, conn: P.Conn) -> int:

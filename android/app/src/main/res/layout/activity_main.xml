@@ -271,12 +271,51 @@
                         android:textStyle="bold"
                         android:letterSpacing="0.05" />
 
+                    <!-- Receiver Segmented Radio Group (Wi-Fi vs USB) -->
+                    <RadioGroup
+                        android:id="@+id/receiverModeRadioGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="@drawable/bg_pill_status_idle"
+                        android:padding="4dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="12dp">
+
+                        <RadioButton
+                            android:id="@+id/receiverModeWifi"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:button="@null"
+                            android:gravity="center"
+                            android:paddingVertical="8dp"
+                            android:background="@drawable/bg_segment_option"
+                            android:textColor="@color/color_segment_text"
+                            android:text="Wi-Fi Network"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <RadioButton
+                            android:id="@+id/receiverModeUsb"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:button="@null"
+                            android:gravity="center"
+                            android:paddingVertical="8dp"
+                            android:background="@drawable/bg_segment_option"
+                            android:textColor="@color/color_segment_text"
+                            android:text="USB Cable"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </RadioGroup>
+
                     <Button
                         android:id="@+id/howToConnectReceiverBtn"
                         style="?android:attr/borderlessButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
                         android:text="How to Connect from PC"
                         android:textColor="@color/accent_green_dark"
                         android:textSize="13sp" />
@@ -298,31 +337,52 @@
                         android:orientation="vertical"
                         android:layout_marginBottom="12dp">
 
+                        <!-- PC Address Row (Full Width Input) -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
                             android:gravity="center_vertical"
-                            android:layout_marginBottom="8dp">
+                            android:layout_marginBottom="4dp">
 
                             <TextView
-                                android:layout_width="120dp"
+                                android:layout_width="110dp"
                                 android:layout_height="wrap_content"
                                 android:text="PC Address:"
                                 android:textColor="@color/text_main"
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
 
-                            <EditText
+                            <AutoCompleteTextView
                                 android:id="@+id/host"
                                 android:layout_width="0dp"
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
-                                android:hint="127.0.0.1 or PC IP"
+                                android:hint="127.0.0.1 or select PC IP"
                                 android:inputType="text"
+                                android:completionThreshold="1"
                                 android:importantForAutofill="no" />
                         </LinearLayout>
 
+                        <!-- Scan PCs Button (Below PC Address Field) -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="end"
+                            android:layout_marginBottom="8dp">
+
+                            <Button
+                                android:id="@+id/scanPcsBtn"
+                                style="?android:attr/borderlessButtonStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Scan PCs"
+                                android:textColor="@color/accent_green_dark"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+
+                        <!-- Port Number Row -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -330,7 +390,7 @@
                             android:gravity="center_vertical">
 
                             <TextView
-                                android:layout_width="120dp"
+                                android:layout_width="110dp"
                                 android:layout_height="wrap_content"
                                 android:text="Port Number:"
                                 android:textColor="@color/text_main"

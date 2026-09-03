@@ -12,20 +12,16 @@
         "source": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-main-29:\\drawable\\bg_brand_icon.xml"
     },
     {
-        "merged": "com.hscast.app-debug-27:/drawable_bg_segment_option.xml.flat",
-        "source": "com.hscast.app-main-29:/drawable/bg_segment_option.xml"
-    },
-    {
         "merged": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-debug-27:\\drawable_bg_card.xml.flat",
         "source": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-main-29:\\drawable\\bg_card.xml"
     },
     {
-        "merged": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-debug-27:\\drawable_bg_pill_status_running.xml.flat",
-        "source": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-main-29:\\drawable\\bg_pill_status_running.xml"
+        "merged": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-debug-27:\\color_color_segment_text.xml.flat",
+        "source": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-main-29:\\color\\color_segment_text.xml"
     },
     {
-        "merged": "com.hscast.app-debug-27:/color_color_segment_text.xml.flat",
-        "source": "com.hscast.app-main-29:/color/color_segment_text.xml"
+        "merged": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-debug-27:\\drawable_bg_pill_status_running.xml.flat",
+        "source": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-main-29:\\drawable\\bg_pill_status_running.xml"
     },
     {
         "merged": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-debug-27:\\layout_activity_receive.xml.flat",
@@ -44,11 +40,15 @@
         "source": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-main-29:\\xml\\remote_input_service.xml"
     },
     {
-        "merged": "com.hscast.app-debug-27:/layout_activity_main.xml.flat",
-        "source": "com.hscast.app-main-29:/layout/activity_main.xml"
+        "merged": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-debug-27:\\drawable_bg_segment_active_green.xml.flat",
+        "source": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-main-29:\\drawable\\bg_segment_active_green.xml"
     },
     {
-        "merged": "com.hscast.app-debug-27:/drawable_bg_segment_active_green.xml.flat",
-        "source": "com.hscast.app-main-29:/drawable/bg_segment_active_green.xml"
+        "merged": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-debug-27:\\drawable_bg_segment_option.xml.flat",
+        "source": "C:\\Users\\cdeep\\.gradle\\daemon\\8.7\\com.hscast.app-main-29:\\drawable\\bg_segment_option.xml"
+    },
+    {
+        "merged": "com.hscast.app-debug-27:/layout_activity_main.xml.flat",
+        "source": "com.hscast.app-main-29:/layout/activity_main.xml"
     }
 ]

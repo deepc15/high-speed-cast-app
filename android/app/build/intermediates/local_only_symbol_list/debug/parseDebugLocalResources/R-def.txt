@@ -47,7 +47,11 @@ id openConfigBtn
 id port
 id receive
 id receiverHint
+id receiverModeRadioGroup
+id receiverModeUsb
+id receiverModeWifi
 id root
+id scanPcsBtn
 id senderHint
 id status
 id statusPill
