@@ -49,14 +49,41 @@
 
 ---
 
-## 💻 How to Run on Windows (Quick Start)
+## 💻 Windows Setup & First-Time Dependencies
+
+Before using HSCast for the first time on a Windows PC, ensure you have the following installed:
+
+### 1. Required Software
+* **Python 3.12 or 3.13 (64-bit)**:
+  * Download from [python.org](https://www.python.org/downloads/).
+  * ⚠️ **Important**: Check the box **"Add python.exe to PATH"** during installation.
+* **Android Platform Tools (ADB)** *(Required only for USB cable mode)*:
+  * Download [Platform-Tools for Windows](https://developer.android.com/tools/releases/platform-tools).
+  * Extract the folder (e.g., `C:\platform-tools`) and add it to your Windows System `PATH`.
+  *(Not needed if you cast over Wi-Fi).*
+
+### 2. Python Dependencies
+HSCast handles all Python dependencies automatically:
+* **Automatic Install**: When you run `Launch-HSCast.bat` or `.\run.ps1`, it will automatically create a virtual environment (`.venv`) and install all required libraries (`av`, `PySDL2`, `numpy`, `dxcam`, `pywebview`, etc.).
+* **Manual Install (Optional)**:
+  ```powershell
+  cd windows
+  python -m venv .venv
+  .\.venv\Scripts\activate
+  pip install -r requirements.txt
+  ```
+
+---
+
+## 🚀 How to Run on Windows (Quick Start)
 
 ### Option 1: 1-Click Graphical Launcher (Easiest)
-Simply double-click the launcher file in the project folder:
+Simply double-click the launcher file in the project root folder:
 ```cmd
 Launch-HSCast.bat
 ```
-This automatically sets up the environment and opens the **HSCast Studio** control window.
+This automatically sets up all dependencies and opens the **HSCast Studio** control window.
+
 
 ---
 
@@ -131,8 +158,42 @@ cd windows
 
 ---
 
+## 🔧 ADB Configuration & Troubleshooting (USB Issues)
+
+If you encounter connection issues over USB, follow these quick fixes:
+
+### 1. ADB Not Recognized (`adb not found`)
+* **Add to System PATH**: Make sure Android `platform-tools` is added to your Windows environment `PATH`.
+* **Or Set Custom ADB Path (Terminal)**:
+  ```powershell
+  $env:HSCAST_ADB = "C:\path\to\platform-tools\adb.exe"
+  ```
+* **Or Set in GUI**: Open **HSCast Studio → Preferences** tab and paste your `adb.exe` location into **Custom ADB Path**.
+
+### 2. Device Not Detected or "Unauthorized"
+* Unlock your phone and accept the prompt: **"Allow USB Debugging?"** (check *"Always allow from this computer"* and tap **Allow**).
+* Restart the ADB server from terminal:
+  ```bash
+  adb kill-server
+  adb start-server
+  adb devices
+  ```
+* Ensure you are using a **data transfer** USB cable (not charge-only).
+
+### 3. Port Stuck or Connection Reset
+* Reset active ADB tunnels:
+  ```bash
+  adb forward --remove-all
+  adb reverse --remove-all
+  ```
+
+> 💡 **Tip**: If USB/ADB continues to give trouble, switch to **Wi-Fi mode** (`--wifi`). Wi-Fi mode connects directly over your local network and does **not** require ADB or USB cables.
+
+---
+
 ## 📋 System Requirements
 
 * **Windows**: Windows 10 or 11 (64-bit), Python 3.12 or newer.
 * **Android**: Android 8.0 or higher.
 * **Connection**: USB cable with ADB enabled, or both devices on the same Wi-Fi network.
+
