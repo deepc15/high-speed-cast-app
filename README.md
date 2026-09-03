@@ -59,7 +59,8 @@ Before using HSCast for the first time on a Windows PC, ensure you have the foll
   * ⚠️ **Important**: Check the box **"Add python.exe to PATH"** during installation.
 * **Android Platform Tools (ADB)** *(Required only for USB cable mode)*:
   * Download [Platform-Tools for Windows](https://developer.android.com/tools/releases/platform-tools).
-  * Extract the folder (e.g., `C:\platform-tools`) and add it to your Windows System `PATH`.
+  * Extract the folder (e.g., `C:\platform-tools`).
+  * You can add it to your Windows System `PATH`, or simply point to `adb.exe` directly inside the HSCast Windows app via the **System Doctor** tab!
   *(Not needed if you cast over Wi-Fi).*
 
 ### 2. Python Dependencies
@@ -160,17 +161,41 @@ cd windows
 
 ## 🔧 ADB Configuration & Troubleshooting (USB Issues)
 
-If you encounter connection issues over USB, follow these quick fixes:
+If you encounter connection issues over USB, or if ADB is not installed system-wide, follow these steps:
 
-### 1. ADB Not Recognized (`adb not found`)
-* **Add to System PATH**: Make sure Android `platform-tools` is added to your Windows environment `PATH`.
-* **Or Set Custom ADB Path (Terminal)**:
+### 1. How to Add & Enable `adb.exe` in the Windows App (Easiest)
+If ADB is not added to your Windows system `PATH`, you can select your `adb.exe` binary directly within the app:
+
+1. Launch **HSCast Studio** (`Launch-HSCast.bat` or `.\run.ps1 gui`).
+2. Click the **System Doctor** tab at the top.
+3. Locate the **Hardware & Dependency Health Check** card for **Android ADB Bridge**.
+4. In the **Custom ADB Binary Path** section below:
+   * Click **Browse File...** to open the Windows file picker and select your `adb.exe` (e.g. from `C:\platform-tools\adb.exe` or `C:\Users\<Username>\AppData\Local\Android\Sdk\platform-tools\adb.exe`).
+   * *Alternatively*, paste the full file path directly into the text input and click **Apply Path**.
+5. The **Android ADB Bridge** status will immediately update to a green **Pass** badge with the confirmed path:
+   ```
+   Pass — ADB located at: C:\platform-tools\adb.exe
+   ```
+6. Switch back to the **Cast Studio** tab — your connected Android device will now automatically appear in the device dropdown!
+
+> 💾 **Saved Automatically**: Once selected, your custom ADB path is saved to `.hscast_config.json` and will automatically load on future runs.
+
+---
+
+### 2. Alternative Setup Methods (Command Line & Environment)
+* **Add to System PATH**:
+  1. Press `Win + R`, type `sysdm.cpl`, and press **Enter**.
+  2. Under the **Advanced** tab, click **Environment Variables**.
+  3. Under *User* or *System* variables, edit `Path` and add your extracted `platform-tools` folder (e.g., `C:\platform-tools`).
+* **Set via PowerShell Terminal**:
   ```powershell
   $env:HSCAST_ADB = "C:\path\to\platform-tools\adb.exe"
+  python -m hscast mirror
   ```
-* **Or Set in GUI**: Open **HSCast Studio → Preferences** tab and paste your `adb.exe` location into **Custom ADB Path**.
 
-### 2. Device Not Detected or "Unauthorized"
+---
+
+### 3. Device Not Detected or "Unauthorized"
 * Unlock your phone and accept the prompt: **"Allow USB Debugging?"** (check *"Always allow from this computer"* and tap **Allow**).
 * Restart the ADB server from terminal:
   ```bash
@@ -180,7 +205,9 @@ If you encounter connection issues over USB, follow these quick fixes:
   ```
 * Ensure you are using a **data transfer** USB cable (not charge-only).
 
-### 3. Port Stuck or Connection Reset
+---
+
+### 4. Port Stuck or Connection Reset
 * Reset active ADB tunnels:
   ```bash
   adb forward --remove-all
