@@ -1,6 +1,8 @@
 # ⚡ HSCast — High-Speed Screen Casting & Control
 
 > Fast, smooth, and low-latency two-way screen casting between **Android** and **Windows** with full mouse and keyboard control.
+>
+> 🚀 **Developed by [Deepsoumya Chakraborti](https://www.linkedin.com/in/deepsoumya-chakraborti-331a2a133/)**
 
 ---
 
@@ -223,4 +225,11 @@ If ADB is not added to your Windows system `PATH`, you can select your `adb.exe`
 * **Windows**: Windows 10 or 11 (64-bit), Python 3.12 or newer.
 * **Android**: Android 8.0 or higher.
 * **Connection**: USB cable with ADB enabled, or both devices on the same Wi-Fi network.
+
+---
+
+## 👨‍💻 Author
+
+Developed by [Deepsoumya Chakraborti](https://www.linkedin.com/in/deepsoumya-chakraborti-331a2a133/)
+
 
