@@ -94,7 +94,8 @@ def run_sender(args) -> int:
     control.start()
 
     conn = listen_one(args.video_port, P.CH_VIDEO, P.ROLE_SENDER, timeout=args.timeout)
-    encoder = Encoder(WIDTH, HEIGHT, FPS, args.bitrate, "h264", args.encoder)
+    cur_w, cur_h = WIDTH, HEIGHT
+    encoder = Encoder(cur_w, cur_h, FPS, args.bitrate, "h264", args.encoder)
     conn.send_stream_info(P.StreamInfo(
         P.CODEC_H264, encoder.width, encoder.height, FPS, encoder.bitrate,
         encoder.extradata,
@@ -110,8 +111,21 @@ def run_sender(args) -> int:
             delay = target - time.perf_counter()
             if delay > 0:
                 time.sleep(delay)
-            frame = _pattern(WIDTH, HEIGHT, tick)
-            for pts, data, keyframe in encoder.encode(frame, now_us(), tick == 0):
+
+            # Check if dynamic rotation is requested
+            rotate_every = getattr(args, "rotate_every", 0)
+            if rotate_every > 0 and tick > 0 and tick % rotate_every == 0:
+                cur_w, cur_h = cur_h, cur_w
+                log(f"simulating device rotation to {cur_w}x{cur_h}...")
+                encoder.close()
+                encoder = Encoder(cur_w, cur_h, FPS, args.bitrate, "h264", args.encoder)
+                conn.send_stream_info(P.StreamInfo(
+                    P.CODEC_H264, encoder.width, encoder.height, FPS, encoder.bitrate,
+                    encoder.extradata,
+                ))
+
+            frame = _pattern(cur_w, cur_h, tick)
+            for pts, data, keyframe in encoder.encode(frame, now_us(), tick == 0 or (rotate_every > 0 and tick % rotate_every == 0)):
                 conn.send_video_frame(pts, data, keyframe)
                 meter.frame(len(data))
             meter.maybe_report()
@@ -172,7 +186,8 @@ def main() -> int:
     sender.add_argument("--video-port", type=int, default=8765)
     sender.add_argument("--control-port", type=int, default=8766)
     sender.add_argument("--bitrate", type=int, default=6_000_000)
-    sender.add_argument("--encoder", default=None)
+    sender.add_argument("--encoder", default=None, help="force encoder name")
+    sender.add_argument("--rotate-every", type=int, default=0, help="simulate orientation flip every N frames")
     sender.add_argument("--frames", type=int, default=0, help="stop after N frames")
     sender.add_argument("--timeout", type=float, default=120.0)
 

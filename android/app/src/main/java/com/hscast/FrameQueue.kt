@@ -89,6 +89,16 @@ class FrameQueue(private val capacity: Int = 3) {
         }
     }
 
+    fun clear() {
+        synchronized(lock) {
+            while (queue.isNotEmpty()) {
+                val frame = queue.removeFirst()
+                if (pool.size < capacity + 2) pool.addLast(frame)
+            }
+            keyframeWanted = true
+        }
+    }
+
     fun close() {
         synchronized(lock) {
             closed = true

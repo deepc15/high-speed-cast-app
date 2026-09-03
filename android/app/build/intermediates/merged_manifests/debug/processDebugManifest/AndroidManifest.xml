@@ -33,6 +33,7 @@
         android:theme="@style/Theme.HSCast" >
         <activity
             android:name="com.hscast.MainActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|density"
             android:exported="true"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize" >

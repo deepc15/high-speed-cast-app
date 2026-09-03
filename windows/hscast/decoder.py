@@ -85,13 +85,19 @@ class Decoder:
         try:
             packet = av.Packet(access_unit)
             return self.ctx.decode(packet)
-        except (av.error.InvalidDataError, av.error.ValueError) as exc:
+        except (av.error.FFmpegError, ValueError) as exc:
             self.corrupt_frames += 1
             if not self._warned:
                 log(f"decode error ({exc}); requesting a keyframe")
                 self._warned = True
             return []
         except av.error.EOFError:
+            return []
+        except Exception as exc:
+            self.corrupt_frames += 1
+            if not self._warned:
+                log(f"unexpected decode error ({type(exc).__name__}: {exc}); requesting a keyframe")
+                self._warned = True
             return []
 
     def flush(self) -> list:

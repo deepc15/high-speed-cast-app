@@ -16,6 +16,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
+import android.os.Looper
 import android.os.PowerManager
 import android.util.DisplayMetrics
 import android.util.Log
@@ -60,6 +61,12 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
 
     private var wakeLock: PowerManager.WakeLock? = null
     private var lastRotation = -1
+    private var lastWidth = -1
+    private var lastHeight = -1
+
+    private val restartRunnable = Runnable {
+        restartEncoder()
+    }
 
     // -- lifecycle -----------------------------------------------------------
 
@@ -317,10 +324,10 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
 
     private fun startEncoder(conn: PacketConn) {
         synchronized(encoderLock) {
-            stopEncoder()
-            val projection = this.projection ?: throw IllegalStateException("no projection")
             val metrics = realDisplayMetrics()
             lastRotation = currentRotation()
+            lastWidth = metrics.widthPixels
+            lastHeight = metrics.heightPixels
             val (width, height) = ScreenEncoder.scaledSize(
                 metrics.widthPixels, metrics.heightPixels, settings.maxSize,
             )
@@ -333,10 +340,22 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
                 codec = settings.codec,
                 iFrameIntervalSec = 1.0f,
             )
+            frames?.clear()
             conn.sendStreamInfo(
                 settings.codec, width, height, settings.fps, settings.bitrateBps, ByteArray(0),
             )
-            encoder = ScreenEncoder(projection, config, this).also { it.start() }
+
+            val currentEncoder = encoder
+            if (currentEncoder != null && currentEncoder.isRunning) {
+                currentEncoder.updateConfig(config)
+            } else {
+                stopEncoder()
+                val projection = this.projection ?: throw IllegalStateException("no projection")
+                encoder = ScreenEncoder(projection, config, this).also {
+                    it.start()
+                    it.requestKeyFrame()
+                }
+            }
         }
     }
 
@@ -371,7 +390,6 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
     private fun restartEncoder() {
         val conn = videoConn ?: return
         synchronized(encoderLock) {
-            stopEncoder()
             try {
                 startEncoder(conn)
             } catch (e: Exception) {
@@ -382,26 +400,38 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
 
     // -- rotation ------------------------------------------------------------
 
+    private fun checkRotationAndRestart() {
+        val rotation = currentRotation()
+        val metrics = realDisplayMetrics()
+        if (rotation == lastRotation && metrics.widthPixels == lastWidth && metrics.heightPixels == lastHeight) {
+            return
+        }
+        if (encoder == null) return
+        Log.i(TAG, "display rotation/geometry change: rot $lastRotation -> $rotation, size ${lastWidth}x${lastHeight} -> ${metrics.widthPixels}x${metrics.heightPixels}")
+        lastRotation = rotation
+        lastWidth = metrics.widthPixels
+        lastHeight = metrics.heightPixels
+        workerHandler.removeCallbacks(restartRunnable)
+        workerHandler.postDelayed(restartRunnable, 250)
+    }
+
     private val displayListener = object : DisplayManager.DisplayListener {
         override fun onDisplayAdded(displayId: Int) = Unit
         override fun onDisplayRemoved(displayId: Int) = Unit
 
         override fun onDisplayChanged(displayId: Int) {
             if (displayId != Display.DEFAULT_DISPLAY) return
-            val rotation = currentRotation()
-            if (rotation == lastRotation || encoder == null) return
-            Log.i(TAG, "rotation $lastRotation -> $rotation, restarting encoder")
-            lastRotation = rotation
-            workerHandler.post { restartEncoder() }
+            workerHandler.post { checkRotationAndRestart() }
         }
     }
 
     private fun registerRotationListener() {
         getSystemService(DisplayManager::class.java)
-            .registerDisplayListener(displayListener, workerHandler)
+            .registerDisplayListener(displayListener, Handler(Looper.getMainLooper()))
     }
 
     private fun unregisterRotationListener() {
+        workerHandler.removeCallbacks(restartRunnable)
         runCatching {
             getSystemService(DisplayManager::class.java)
                 .unregisterDisplayListener(displayListener)
@@ -414,16 +444,20 @@ class CastService : Service(), ScreenEncoder.Listener, ControlHandler.Sink {
 
     private fun realDisplayMetrics(): DisplayMetrics {
         val metrics = DisplayMetrics()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val bounds = getSystemService(WindowManager::class.java).currentWindowMetrics.bounds
-            metrics.widthPixels = bounds.width()
-            metrics.heightPixels = bounds.height()
-            metrics.densityDpi = resources.configuration.densityDpi
+        val display = getSystemService(DisplayManager::class.java)?.getDisplay(Display.DEFAULT_DISPLAY)
+        if (display != null) {
+            display.getRealMetrics(metrics)
         } else {
-            @Suppress("DEPRECATION")
-            getSystemService(DisplayManager::class.java)
-                .getDisplay(Display.DEFAULT_DISPLAY)
-                .getRealMetrics(metrics)
+            val windowManager = getSystemService(WindowManager::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val bounds = windowManager.currentWindowMetrics.bounds
+                metrics.widthPixels = bounds.width()
+                metrics.heightPixels = bounds.height()
+                metrics.densityDpi = resources.configuration.densityDpi
+            } else {
+                @Suppress("DEPRECATION")
+                windowManager.defaultDisplay.getRealMetrics(metrics)
+            }
         }
         return metrics
     }

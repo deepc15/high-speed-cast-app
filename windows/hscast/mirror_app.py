@@ -341,7 +341,7 @@ def _session(opts: MirrorOptions, video: P.Conn, control: P.Conn | None) -> int:
                     # tick rather than on every pass of a ~500 Hz loop.
                     if pong and pong.rtt_ms is not None:
                         renderer.set_title(
-                            f"HSCast - Android  {info.width}x{info.height}  "
+                            f"HSCast - Android  {renderer.src_w}x{renderer.src_h}  "
                             f"rtt {pong.rtt_ms:.1f} ms"
                         )
                 meter.maybe_report()

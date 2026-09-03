@@ -23,7 +23,7 @@ import java.nio.ByteBuffer
  */
 class ScreenEncoder(
     private val projection: MediaProjection,
-    val config: Config,
+    var config: Config,
     private val listener: Listener,
 ) {
 
@@ -57,6 +57,8 @@ class ScreenEncoder(
     @Volatile
     private var running = false
 
+    val isRunning: Boolean get() = running
+
     private val callback = object : MediaCodec.Callback() {
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
             // Surface input: the encoder pulls frames itself, never called.
@@ -67,6 +69,7 @@ class ScreenEncoder(
             index: Int,
             info: MediaCodec.BufferInfo,
         ) {
+            if (!running) return
             try {
                 val buffer = codec.getOutputBuffer(index)
                 if (buffer != null && info.size > 0) {
@@ -75,29 +78,60 @@ class ScreenEncoder(
                     if (info.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG != 0) {
                         val csd = ByteArray(info.size)
                         buffer.get(csd)
-                        listener.onCodecConfig(csd)
+                        if (running) listener.onCodecConfig(csd)
                     } else {
-                        listener.onFrame(
-                            info.presentationTimeUs,
-                            buffer,
-                            info.size,
-                            info.flags and MediaCodec.BUFFER_FLAG_KEY_FRAME != 0,
-                        )
+                        if (running) {
+                            listener.onFrame(
+                                info.presentationTimeUs,
+                                buffer,
+                                info.size,
+                                info.flags and MediaCodec.BUFFER_FLAG_KEY_FRAME != 0,
+                            )
+                        }
                     }
                 }
             } catch (t: Throwable) {
-                listener.onEncoderError(t)
+                if (running) listener.onEncoderError(t)
             } finally {
-                runCatching { codec.releaseOutputBuffer(index, false) }
+                if (running) {
+                    runCatching { codec.releaseOutputBuffer(index, false) }
+                }
             }
         }
 
         override fun onError(codec: MediaCodec, error: MediaCodec.CodecException) {
-            listener.onEncoderError(error)
+            if (running) {
+                listener.onEncoderError(error)
+            }
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
             Log.i(TAG, "encoder output format: $format")
+            val csd0 = format.getByteBuffer("csd-0")
+            val csd1 = format.getByteBuffer("csd-1")
+            val extra = when {
+                csd0 != null && csd1 != null -> {
+                    val buf = ByteArray(csd0.remaining() + csd1.remaining())
+                    val p0 = csd0.position()
+                    csd0.get(buf, 0, csd0.remaining())
+                    csd0.position(p0)
+                    val p1 = csd1.position()
+                    csd1.get(buf, buf.size - csd1.remaining(), csd1.remaining())
+                    csd1.position(p1)
+                    buf
+                }
+                csd0 != null -> {
+                    val buf = ByteArray(csd0.remaining())
+                    val p0 = csd0.position()
+                    csd0.get(buf)
+                    csd0.position(p0)
+                    buf
+                }
+                else -> null
+            }
+            if (running && extra != null && extra.isNotEmpty()) {
+                listener.onCodecConfig(extra)
+            }
         }
     }
 
@@ -169,6 +203,66 @@ class ScreenEncoder(
             "encoding ${config.width}x${config.height} @ ${config.fps} fps, " +
                 "${config.bitrateBps / 1000} kb/s, $mime",
         )
+    }
+
+    fun updateConfig(newConfig: Config) {
+        running = false
+        try {
+            codec?.runCatching {
+                stop()
+                release()
+            }
+            codec = null
+            surface?.runCatching { release() }
+            surface = null
+
+            config = newConfig
+
+            val mime = Protocol.mimeFor(config.codec)
+            val format = MediaFormat.createVideoFormat(mime, config.width, config.height).apply {
+                setInteger(
+                    MediaFormat.KEY_COLOR_FORMAT,
+                    MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface,
+                )
+                setInteger(MediaFormat.KEY_BIT_RATE, config.bitrateBps)
+                setInteger(MediaFormat.KEY_FRAME_RATE, config.fps)
+                setFloat(MediaFormat.KEY_I_FRAME_INTERVAL, config.iFrameIntervalSec)
+                setLong(MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER, 100_000L)
+                setInteger(
+                    MediaFormat.KEY_BITRATE_MODE,
+                    MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR,
+                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    setInteger(MediaFormat.KEY_MAX_B_FRAMES, 0)
+                    setInteger(MediaFormat.KEY_PREPEND_HEADER_TO_SYNC_FRAMES, 1)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    setInteger(MediaFormat.KEY_LATENCY, 1)
+                }
+            }
+
+            val encoder = MediaCodec.createEncoderByType(mime)
+            encoder.setCallback(callback, Handler(thread!!.looper))
+            encoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+            val inputSurface = encoder.createInputSurface()
+            encoder.start()
+
+            virtualDisplay?.resize(config.width, config.height, config.dpi)
+            virtualDisplay?.surface = inputSurface
+
+            codec = encoder
+            surface = inputSurface
+            running = true
+            Log.i(
+                TAG,
+                "smoothly updated encoder config: ${config.width}x${config.height} @ ${config.fps} fps",
+            )
+            requestKeyFrame()
+        } catch (t: Throwable) {
+            running = false
+            Log.e(TAG, "failed to update encoder config during rotation", t)
+            listener.onEncoderError(t)
+        }
     }
 
     fun requestKeyFrame() {

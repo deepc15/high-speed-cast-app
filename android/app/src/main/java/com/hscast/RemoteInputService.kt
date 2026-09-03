@@ -5,12 +5,15 @@ import android.accessibilityservice.GestureDescription
 import android.content.res.Configuration
 import android.graphics.Path
 import android.graphics.Point
+import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.Display
 import android.view.KeyEvent
+import android.view.Surface
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -39,6 +42,7 @@ class RemoteInputService : AccessibilityService() {
     private var hasPending = false
     private var pendingUp = false
     private var cachedSize: Point? = null
+    private var lastRotation: Int = -1
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -93,6 +97,13 @@ class RemoteInputService : AccessibilityService() {
     // -- geometry ------------------------------------------------------------
 
     private fun screenSize(): Point {
+        val dm = getSystemService(DisplayManager::class.java)
+        val display = dm?.getDisplay(Display.DEFAULT_DISPLAY)
+        val currentRot = display?.rotation ?: Surface.ROTATION_0
+        if (currentRot != lastRotation) {
+            lastRotation = currentRot
+            cachedSize = null
+        }
         cachedSize?.let { return it }
         val manager = getSystemService(WindowManager::class.java)
         val size = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -101,6 +112,17 @@ class RemoteInputService : AccessibilityService() {
         } else {
             @Suppress("DEPRECATION")
             Point().also { manager.defaultDisplay.getRealSize(it) }
+        }
+        val isLandscape = currentRot == Surface.ROTATION_90 || currentRot == Surface.ROTATION_270
+        val isPortrait = currentRot == Surface.ROTATION_0 || currentRot == Surface.ROTATION_180
+        if (isLandscape && size.x < size.y) {
+            val tmp = size.x
+            size.x = size.y
+            size.y = tmp
+        } else if (isPortrait && size.x > size.y) {
+            val tmp = size.x
+            size.x = size.y
+            size.y = tmp
         }
         cachedSize = size
         return size
